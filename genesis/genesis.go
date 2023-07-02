@@ -57,13 +57,13 @@ func validateInitialStakedFunds(config *Config) error {
 	initialStakedFundsSet := ids.ShortSet{}
 	for _, allocation := range config.Allocations {
 		// It is ok to have duplicates as different
-		// ethAddrs could claim to the same djtxAddr.
-		allocationSet.Add(allocation.DJTXAddr)
+		// ethAddrs could claim to the same avaxAddr.
+		allocationSet.Add(allocation.AVAXAddr)
 	}
 
 	for _, staker := range config.InitialStakedFunds {
 		if initialStakedFundsSet.Contains(staker) {
-			djtxAddr, err := formatting.FormatAddress(
+			avaxAddr, err := formatting.FormatAddress(
 				configChainIDAlias,
 				constants.GetHRP(config.NetworkID),
 				staker.Bytes(),
@@ -77,13 +77,13 @@ func validateInitialStakedFunds(config *Config) error {
 
 			return fmt.Errorf(
 				"address %s is duplicated in initial staked funds",
-				djtxAddr,
+				avaxAddr,
 			)
 		}
 		initialStakedFundsSet.Add(staker)
 
 		if !allocationSet.Contains(staker) {
-			djtxAddr, err := formatting.FormatAddress(
+			avaxAddr, err := formatting.FormatAddress(
 				configChainIDAlias,
 				constants.GetHRP(config.NetworkID),
 				staker.Bytes(),
@@ -97,7 +97,7 @@ func validateInitialStakedFunds(config *Config) error {
 
 			return fmt.Errorf(
 				"address %s does not have an allocation to stake",
-				djtxAddr,
+				avaxAddr,
 			)
 		}
 	}
@@ -183,7 +183,7 @@ func validateConfig(networkID uint32, config *Config) error {
 // Genesis returns:
 // 1) The byte representation of the genesis state of the platform chain
 //    (ie the genesis state of the network)
-// 2) The asset ID of DJTX
+// 2) The asset ID of AVAX
 func Genesis(networkID uint32, filepath string) ([]byte, ids.ID, error) {
 	config := GetConfig(networkID)
 	if len(filepath) > 0 {
@@ -214,7 +214,7 @@ func Genesis(networkID uint32, filepath string) ([]byte, ids.ID, error) {
 // FromConfig returns:
 // 1) The byte representation of the genesis state of the platform chain
 //    (ie the genesis state of the network)
-// 2) The asset ID of DJTX
+// 2) The asset ID of AVAX
 func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	hrp := constants.GetHRP(config.NetworkID)
 
@@ -226,7 +226,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		Encoding:  defaultEncoding,
 	}
 	{
-		djtx := avm.AssetDefinition{
+		avax := avm.AssetDefinition{
 			Name:         "Dijets",
 			Symbol:       "DJTX",
 			Denomination: 9,
@@ -242,12 +242,12 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		sortXAllocation(xAllocations)
 
 		for _, allocation := range xAllocations {
-			addr, err := formatting.FormatBech32(hrp, allocation.DJTXAddr.Bytes())
+			addr, err := formatting.FormatBech32(hrp, allocation.AVAXAddr.Bytes())
 			if err != nil {
 				return nil, ids.ID{}, err
 			}
 
-			djtx.InitialState["fixedCap"] = append(djtx.InitialState["fixedCap"], avm.Holder{
+			avax.InitialState["fixedCap"] = append(avax.InitialState["fixedCap"], avm.Holder{
 				Amount:  json.Uint64(allocation.InitialAmount),
 				Address: addr,
 			})
@@ -256,12 +256,12 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		}
 
 		var err error
-		djtx.Memo, err = formatting.EncodeWithChecksum(defaultEncoding, memoBytes)
+		avax.Memo, err = formatting.EncodeWithChecksum(defaultEncoding, memoBytes)
 		if err != nil {
 			return nil, ids.Empty, fmt.Errorf("couldn't parse memo bytes to string: %w", err)
 		}
 		avmArgs.GenesisData = map[string]avm.AssetDefinition{
-			"DJTX": djtx, // The AVM starts out with one asset: DJTX
+			"AVAX": avax, // The AVM starts out with one asset: AVAX
 		}
 	}
 	avmReply := avm.BuildGenesisReply{}
@@ -276,9 +276,9 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 	if err != nil {
 		return nil, ids.ID{}, fmt.Errorf("couldn't parse avm genesis reply: %w", err)
 	}
-	djtxAssetID, err := DJTXAssetID(bytes)
+	avaxAssetID, err := AVAXAssetID(bytes)
 	if err != nil {
-		return nil, ids.ID{}, fmt.Errorf("couldn't generate DJTX asset ID: %w", err)
+		return nil, ids.ID{}, fmt.Errorf("couldn't generate AVAX asset ID: %w", err)
 	}
 
 	genesisTime := time.Unix(int64(config.StartTime), 0)
@@ -293,7 +293,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 
 	// Specify the initial state of the Platform Chain
 	platformvmArgs := platformvm.BuildGenesisArgs{
-		DjtxAssetID:   djtxAssetID,
+		AvaxAssetID:   avaxAssetID,
 		NetworkID:     json.Uint32(config.NetworkID),
 		Time:          json.Uint64(config.StartTime),
 		InitialSupply: json.Uint64(initialSupply),
@@ -301,11 +301,11 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		Encoding:      defaultEncoding,
 	}
 	for _, allocation := range config.Allocations {
-		if initiallyStaked.Contains(allocation.DJTXAddr) {
+		if initiallyStaked.Contains(allocation.AVAXAddr) {
 			skippedAllocations = append(skippedAllocations, allocation)
 			continue
 		}
-		addr, err := formatting.FormatBech32(hrp, allocation.DJTXAddr.Bytes())
+		addr, err := formatting.FormatBech32(hrp, allocation.AVAXAddr.Bytes())
 		if err != nil {
 			return nil, ids.ID{}, err
 		}
@@ -343,7 +343,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 
 		utxos := []platformvm.APIUTXO(nil)
 		for _, allocation := range nodeAllocations {
-			addr, err := formatting.FormatBech32(hrp, allocation.DJTXAddr.Bytes())
+			addr, err := formatting.FormatBech32(hrp, allocation.AVAXAddr.Bytes())
 			if err != nil {
 				return nil, ids.ID{}, err
 			}
@@ -417,7 +417,7 @@ func FromConfig(config *Config) ([]byte, ids.ID, error) {
 		return nil, ids.ID{}, fmt.Errorf("problem parsing platformvm genesis bytes: %w", err)
 	}
 
-	return genesisBytes, djtxAssetID, nil
+	return genesisBytes, avaxAssetID, nil
 }
 
 func splitAllocations(allocations []Allocation, numSplits int) [][]Allocation {
@@ -500,7 +500,7 @@ func VMGenesis(genesisBytes []byte, vmID ids.ID) (*platformvm.Tx, error) {
 	return nil, fmt.Errorf("couldn't find blockchain with VM ID %s", vmID)
 }
 
-func DJTXAssetID(avmGenesisBytes []byte) (ids.ID, error) {
+func AVAXAssetID(avmGenesisBytes []byte) (ids.ID, error) {
 	c := linearcodec.New(reflectcodec.DefaultTagName, 1<<20)
 	m := codec.NewManager(math.MaxUint32)
 	errs := wrappers.Errs{}
@@ -550,7 +550,7 @@ type innerSortXAllocation []Allocation
 func (xa innerSortXAllocation) Less(i, j int) bool {
 	return xa[i].InitialAmount < xa[j].InitialAmount ||
 		(xa[i].InitialAmount == xa[j].InitialAmount &&
-			bytes.Compare(xa[i].DJTXAddr.Bytes(), xa[j].DJTXAddr.Bytes()) == -1)
+			bytes.Compare(xa[i].AVAXAddr.Bytes(), xa[j].AVAXAddr.Bytes()) == -1)
 }
 
 func (xa innerSortXAllocation) Len() int      { return len(xa) }

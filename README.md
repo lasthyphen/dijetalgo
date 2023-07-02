@@ -4,7 +4,7 @@
 
 ---
 
-Node implementation for the [Avalanche](https://djtx.network) network -
+Node implementation for the [Avalanche](https://avax.network) network -
 a blockchains platform with high throughput, and blazing fast transactions.
 
 ## Installation
@@ -53,8 +53,8 @@ To add the repository on Ubuntu 18.04 (Bionic), run:
 
 ```sh
 sudo su -
-wget -O - https://downloads.djtx.network/avalanchego.gpg.key | apt-key add -
-echo "deb https://downloads.djtx.network/apt bionic main" > /etc/apt/sources.list.d/avalanche.list
+wget -O - https://downloads.avax.network/avalanchego.gpg.key | apt-key add -
+echo "deb https://downloads.avax.network/apt bionic main" > /etc/apt/sources.list.d/avalanche.list
 exit
 ```
 
@@ -62,8 +62,8 @@ To add the repository on Ubuntu 20.04 (Focal), run:
 
 ```sh
 sudo su -
-wget -O - https://downloads.djtx.network/avalanchego.gpg.key | apt-key add -
-echo "deb https://downloads.djtx.network/apt focal main" > /etc/apt/sources.list.d/avalanche.list
+wget -O - https://downloads.avax.network/avalanchego.gpg.key | apt-key add -
+echo "deb https://downloads.avax.network/apt focal main" > /etc/apt/sources.list.d/avalanche.list
 exit
 ```
 
@@ -118,12 +118,12 @@ You should see some pretty ASCII art and log messages.
 
 You can use `Ctrl+C` to kill the node.
 
-### Connecting to Fuji
+### Connecting to Tahoe
 
-To connect to the Fuji Testnet, run:
+To connect to the Tahoe Testnet, run:
 
 ```sh
-./build/avalanchego --network-id=fuji
+./build/avalanchego --network-id=tahoe
 ```
 
 ### Creating a Local Testnet

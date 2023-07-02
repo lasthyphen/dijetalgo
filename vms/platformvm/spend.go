@@ -11,7 +11,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
 	"github.com/lasthyphen/dijetalgo/utils/hashing"
 	"github.com/lasthyphen/dijetalgo/utils/math"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
@@ -27,7 +27,7 @@ var (
 // Arguments:
 // - [keys] are the owners of the funds
 // - [amount] is the amount of funds that are trying to be staked
-// - [fee] is the amount of DJTX that should be burned
+// - [fee] is the amount of AVAX that should be burned
 // - [changeAddr] is the address that change, if there is any, is sent to
 // Returns:
 // - [inputs] the inputs that should be consumed to fund the outputs
@@ -42,9 +42,9 @@ func (vm *VM) stake(
 	fee uint64,
 	changeAddr ids.ShortID,
 ) (
-	[]*djtx.TransferableInput, // inputs
-	[]*djtx.TransferableOutput, // returnedOutputs
-	[]*djtx.TransferableOutput, // stakedOutputs
+	[]*avax.TransferableInput, // inputs
+	[]*avax.TransferableOutput, // returnedOutputs
+	[]*avax.TransferableOutput, // stakedOutputs
 	[][]*crypto.PrivateKeySECP256K1R, // signers
 	error,
 ) {
@@ -65,24 +65,24 @@ func (vm *VM) stake(
 	// Minimum time this transaction will be issued at
 	now := uint64(vm.clock.Time().Unix())
 
-	ins := []*djtx.TransferableInput{}
-	returnedOuts := []*djtx.TransferableOutput{}
-	stakedOuts := []*djtx.TransferableOutput{}
+	ins := []*avax.TransferableInput{}
+	returnedOuts := []*avax.TransferableOutput{}
+	stakedOuts := []*avax.TransferableOutput{}
 	signers := [][]*crypto.PrivateKeySECP256K1R{}
 
-	// Amount of DJTX that has been staked
+	// Amount of AVAX that has been staked
 	amountStaked := uint64(0)
 
 	// Consume locked UTXOs
 	for _, utxo := range utxos {
-		// If we have consumed more DJTX than we are trying to stake, then we
-		// have no need to consume more locked DJTX
+		// If we have consumed more AVAX than we are trying to stake, then we
+		// have no need to consume more locked AVAX
 		if amountStaked >= amount {
 			break
 		}
 
-		if assetID := utxo.AssetID(); assetID != vm.ctx.DJTXAssetID {
-			continue // We only care about staking DJTX, so ignore other assets
+		if assetID := utxo.AssetID(); assetID != vm.ctx.AVAXAssetID {
+			continue // We only care about staking AVAX, so ignore other assets
 		}
 
 		out, ok := utxo.Out.(*StakeableLockOut)
@@ -108,9 +108,9 @@ func (vm *VM) stake(
 			// We couldn't spend the output, so move on to the next one
 			continue
 		}
-		in, ok := inIntf.(djtx.TransferableIn)
+		in, ok := inIntf.(avax.TransferableIn)
 		if !ok { // should never happen
-			vm.ctx.Log.Warn("expected input to be djtx.TransferableIn but is %T", inIntf)
+			vm.ctx.Log.Warn("expected input to be avax.TransferableIn but is %T", inIntf)
 			continue
 		}
 
@@ -126,9 +126,9 @@ func (vm *VM) stake(
 		remainingValue -= amountToStake
 
 		// Add the input to the consumed inputs
-		ins = append(ins, &djtx.TransferableInput{
+		ins = append(ins, &avax.TransferableInput{
 			UTXOID: utxo.UTXOID,
-			Asset:  djtx.Asset{ID: vm.ctx.DJTXAssetID},
+			Asset:  avax.Asset{ID: vm.ctx.AVAXAssetID},
 			In: &StakeableLockIn{
 				Locktime:       out.Locktime,
 				TransferableIn: in,
@@ -136,8 +136,8 @@ func (vm *VM) stake(
 		})
 
 		// Add the output to the staked outputs
-		stakedOuts = append(stakedOuts, &djtx.TransferableOutput{
-			Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
+		stakedOuts = append(stakedOuts, &avax.TransferableOutput{
+			Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
 			Out: &StakeableLockOut{
 				Locktime: out.Locktime,
 				TransferableOut: &secp256k1fx.TransferOutput{
@@ -150,8 +150,8 @@ func (vm *VM) stake(
 		if remainingValue > 0 {
 			// This input provided more value than was needed to be locked.
 			// Some of it must be returned
-			returnedOuts = append(returnedOuts, &djtx.TransferableOutput{
-				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
+			returnedOuts = append(returnedOuts, &avax.TransferableOutput{
+				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
 				Out: &StakeableLockOut{
 					Locktime: out.Locktime,
 					TransferableOut: &secp256k1fx.TransferOutput{
@@ -166,19 +166,19 @@ func (vm *VM) stake(
 		signers = append(signers, inSigners)
 	}
 
-	// Amount of DJTX that has been burned
+	// Amount of AVAX that has been burned
 	amountBurned := uint64(0)
 
 	for _, utxo := range utxos {
-		// If we have consumed more DJTX than we are trying to stake, and we
-		// have burned more DJTX then we need to, then we have no need to
-		// consume more DJTX
+		// If we have consumed more AVAX than we are trying to stake, and we
+		// have burned more AVAX then we need to, then we have no need to
+		// consume more AVAX
 		if amountBurned >= fee && amountStaked >= amount {
 			break
 		}
 
-		if assetID := utxo.AssetID(); assetID != vm.ctx.DJTXAssetID {
-			continue // We only care about burning DJTX, so ignore other assets
+		if assetID := utxo.AssetID(); assetID != vm.ctx.AVAXAssetID {
+			continue // We only care about burning AVAX, so ignore other assets
 		}
 
 		out := utxo.Out
@@ -198,7 +198,7 @@ func (vm *VM) stake(
 			// We couldn't spend this UTXO, so we skip to the next one
 			continue
 		}
-		in, ok := inIntf.(djtx.TransferableIn)
+		in, ok := inIntf.(avax.TransferableIn)
 		if !ok {
 			// Because we only use the secp Fx right now, this should never
 			// happen
@@ -225,16 +225,16 @@ func (vm *VM) stake(
 		remainingValue -= amountToStake
 
 		// Add the input to the consumed inputs
-		ins = append(ins, &djtx.TransferableInput{
+		ins = append(ins, &avax.TransferableInput{
 			UTXOID: utxo.UTXOID,
-			Asset:  djtx.Asset{ID: vm.ctx.DJTXAssetID},
+			Asset:  avax.Asset{ID: vm.ctx.AVAXAssetID},
 			In:     in,
 		})
 
 		if amountToStake > 0 {
 			// Some of this input was put for staking
-			stakedOuts = append(stakedOuts, &djtx.TransferableOutput{
-				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
+			stakedOuts = append(stakedOuts, &avax.TransferableOutput{
+				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: amountToStake,
 					OutputOwners: secp256k1fx.OutputOwners{
@@ -248,8 +248,8 @@ func (vm *VM) stake(
 
 		if remainingValue > 0 {
 			// This input had extra value, so some of it must be returned
-			returnedOuts = append(returnedOuts, &djtx.TransferableOutput{
-				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
+			returnedOuts = append(returnedOuts, &avax.TransferableOutput{
+				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: remainingValue,
 					OutputOwners: secp256k1fx.OutputOwners{
@@ -271,9 +271,9 @@ func (vm *VM) stake(
 			amountBurned, amountStaked, fee, amount)
 	}
 
-	djtx.SortTransferableInputsWithSigners(ins, signers) // sort inputs and keys
-	djtx.SortTransferableOutputs(returnedOuts, Codec)    // sort outputs
-	djtx.SortTransferableOutputs(stakedOuts, Codec)      // sort outputs
+	avax.SortTransferableInputsWithSigners(ins, signers) // sort inputs and keys
+	avax.SortTransferableOutputs(returnedOuts, Codec)    // sort outputs
+	avax.SortTransferableOutputs(stakedOuts, Codec)      // sort outputs
 
 	return ins, returnedOuts, stakedOuts, signers, nil
 }
@@ -333,13 +333,13 @@ func (vm *VM) authorize(
 func (vm *VM) semanticVerifySpend(
 	utxoDB UTXOGetter,
 	tx UnsignedTx,
-	ins []*djtx.TransferableInput,
-	outs []*djtx.TransferableOutput,
+	ins []*avax.TransferableInput,
+	outs []*avax.TransferableOutput,
 	creds []verify.Verifiable,
 	feeAmount uint64,
 	feeAssetID ids.ID,
 ) TxError {
-	utxos := make([]*djtx.UTXO, len(ins))
+	utxos := make([]*avax.UTXO, len(ins))
 	for index, input := range ins {
 		utxo, err := utxoDB.GetUTXO(input.InputID())
 		if err != nil {
@@ -365,9 +365,9 @@ func (vm *VM) semanticVerifySpend(
 // Precondition: [tx] has already been syntactically verified
 func (vm *VM) semanticVerifySpendUTXOs(
 	tx UnsignedTx,
-	utxos []*djtx.UTXO,
-	ins []*djtx.TransferableInput,
-	outs []*djtx.TransferableOutput,
+	utxos []*avax.UTXO,
+	ins []*avax.TransferableInput,
+	outs []*avax.TransferableOutput,
 	creds []verify.Verifiable,
 	feeAmount uint64,
 	feeAssetID ids.ID,
@@ -547,7 +547,7 @@ func (vm *VM) semanticVerifySpendUTXOs(
 // Removes the UTXOs consumed by [ins] from the UTXO set
 func consumeInputs(
 	utxoDB UTXODeleter,
-	ins []*djtx.TransferableInput,
+	ins []*avax.TransferableInput,
 ) {
 	for _, input := range ins {
 		utxoDB.DeleteUTXO(input.InputID())
@@ -560,15 +560,15 @@ func produceOutputs(
 	utxoDB UTXOAdder,
 	txID ids.ID,
 	assetID ids.ID,
-	outs []*djtx.TransferableOutput,
+	outs []*avax.TransferableOutput,
 ) {
 	for index, out := range outs {
-		utxoDB.AddUTXO(&djtx.UTXO{
-			UTXOID: djtx.UTXOID{
+		utxoDB.AddUTXO(&avax.UTXO{
+			UTXOID: avax.UTXOID{
 				TxID:        txID,
 				OutputIndex: uint32(index),
 			},
-			Asset: djtx.Asset{ID: assetID},
+			Asset: avax.Asset{ID: assetID},
 			Out:   out.Output(),
 		})
 	}

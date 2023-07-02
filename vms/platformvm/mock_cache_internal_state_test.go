@@ -4,7 +4,7 @@ package platformvm
 
 import (
 	database "github.com/lasthyphen/dijetalgo/database"
-	djtx "github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	avax "github.com/lasthyphen/dijetalgo/vms/components/avax"
 
 	ids "github.com/lasthyphen/dijetalgo/ids"
 
@@ -51,7 +51,7 @@ func (_m *MockInternalState) AddPendingStaker(tx *Tx) {
 }
 
 // AddRewardUTXO provides a mock function with given fields: txID, utxo
-func (_m *MockInternalState) AddRewardUTXO(txID ids.ID, utxo *djtx.UTXO) {
+func (_m *MockInternalState) AddRewardUTXO(txID ids.ID, utxo *avax.UTXO) {
 	_m.Called(txID, utxo)
 }
 
@@ -66,7 +66,7 @@ func (_m *MockInternalState) AddTx(tx *Tx, status Status) {
 }
 
 // AddUTXO provides a mock function with given fields: utxo
-func (_m *MockInternalState) AddUTXO(utxo *djtx.UTXO) {
+func (_m *MockInternalState) AddUTXO(utxo *avax.UTXO) {
 	_m.Called(utxo)
 }
 
@@ -252,15 +252,15 @@ func (_m *MockInternalState) GetLastAccepted() ids.ID {
 }
 
 // GetRewardUTXOs provides a mock function with given fields: txID
-func (_m *MockInternalState) GetRewardUTXOs(txID ids.ID) ([]*djtx.UTXO, error) {
+func (_m *MockInternalState) GetRewardUTXOs(txID ids.ID) ([]*avax.UTXO, error) {
 	ret := _m.Called(txID)
 
-	var r0 []*djtx.UTXO
-	if rf, ok := ret.Get(0).(func(ids.ID) []*djtx.UTXO); ok {
+	var r0 []*avax.UTXO
+	if rf, ok := ret.Get(0).(func(ids.ID) []*avax.UTXO); ok {
 		r0 = rf(txID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*djtx.UTXO)
+			r0 = ret.Get(0).([]*avax.UTXO)
 		}
 	}
 
@@ -342,15 +342,15 @@ func (_m *MockInternalState) GetTx(txID ids.ID) (*Tx, Status, error) {
 }
 
 // GetUTXO provides a mock function with given fields: utxoID
-func (_m *MockInternalState) GetUTXO(utxoID ids.ID) (*djtx.UTXO, error) {
+func (_m *MockInternalState) GetUTXO(utxoID ids.ID) (*avax.UTXO, error) {
 	ret := _m.Called(utxoID)
 
-	var r0 *djtx.UTXO
-	if rf, ok := ret.Get(0).(func(ids.ID) *djtx.UTXO); ok {
+	var r0 *avax.UTXO
+	if rf, ok := ret.Get(0).(func(ids.ID) *avax.UTXO); ok {
 		r0 = rf(utxoID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*djtx.UTXO)
+			r0 = ret.Get(0).(*avax.UTXO)
 		}
 	}
 

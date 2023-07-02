@@ -6,7 +6,7 @@ package avm
 import (
 	"github.com/lasthyphen/dijetalgo/api"
 	"github.com/lasthyphen/dijetalgo/pubsub"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 )
 
 var _ pubsub.Filterer = &filterer{}
@@ -23,7 +23,7 @@ func NewPubSubFilterer(tx *Tx) pubsub.Filterer {
 func (f *filterer) Filter(filters []pubsub.Filter) ([]bool, interface{}) {
 	resp := make([]bool, len(filters))
 	for _, utxo := range f.tx.UTXOs() {
-		addressable, ok := utxo.Out.(djtx.Addressable)
+		addressable, ok := utxo.Out.(avax.Addressable)
 		if !ok {
 			continue
 		}

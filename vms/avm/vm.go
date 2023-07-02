@@ -30,7 +30,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/utils/timer"
 	"github.com/lasthyphen/dijetalgo/utils/timer/mockable"
 	"github.com/lasthyphen/dijetalgo/version"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/components/index"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 	"github.com/lasthyphen/dijetalgo/vms/nftfx"
@@ -62,8 +62,8 @@ var (
 type VM struct {
 	Factory
 	metrics
-	djtx.AddressManager
-	djtx.AtomicUTXOManager
+	avax.AddressManager
+	avax.AtomicUTXOManager
 	ids.Aliaser
 
 	// Contains information of where this VM is executing
@@ -148,7 +148,7 @@ func (vm *VM) Initialize(
 	if err != nil {
 		return err
 	}
-	vm.AddressManager = djtx.NewAddressManager(ctx)
+	vm.AddressManager = avax.NewAddressManager(ctx)
 	vm.Aliaser = ids.NewAliaser()
 
 	db := dbManager.Current().Database
@@ -188,7 +188,7 @@ func (vm *VM) Initialize(
 		return err
 	}
 
-	vm.AtomicUTXOManager = djtx.NewAtomicUTXOManager(ctx.SharedMemory, vm.codec)
+	vm.AtomicUTXOManager = avax.NewAtomicUTXOManager(ctx.SharedMemory, vm.codec)
 
 	state, err := NewMeteredState(vm.db, vm.genesisCodec, vm.codec, ctx.Namespace, ctx.Metrics)
 	if err != nil {
@@ -380,7 +380,7 @@ func (vm *VM) getPaginatedUTXOs(
 	startAddr ids.ShortID,
 	startUTXOID ids.ID,
 	limit int,
-) ([]*djtx.UTXO, ids.ShortID, ids.ID, error) {
+) ([]*avax.UTXO, ids.ShortID, ids.ID, error) {
 	if limit <= 0 || limit > maxUTXOsToFetch {
 		limit = maxUTXOsToFetch
 	}
@@ -388,7 +388,7 @@ func (vm *VM) getPaginatedUTXOs(
 	lastIndex := ids.Empty
 	searchSize := limit // maximum number of utxos that can be returned
 
-	utxos := make([]*djtx.UTXO, 0, limit)
+	utxos := make([]*avax.UTXO, 0, limit)
 	seen := make(ids.Set, limit) // IDs of UTXOs already in the list
 
 	// enforces the same ordering for pagination
@@ -432,9 +432,9 @@ func (vm *VM) getPaginatedUTXOs(
 	return utxos, lastAddr, lastIndex, nil // Didn't reach the [limit] utxos; no more were found
 }
 
-func (vm *VM) getAllUTXOs(addrs ids.ShortSet) ([]*djtx.UTXO, error) {
+func (vm *VM) getAllUTXOs(addrs ids.ShortSet) ([]*avax.UTXO, error) {
 	seen := make(ids.Set, maxUTXOsToFetch) // IDs of UTXOs already in the list
-	utxos := make([]*djtx.UTXO, 0, maxUTXOsToFetch)
+	utxos := make([]*avax.UTXO, 0, maxUTXOsToFetch)
 
 	// enforces the same ordering for pagination
 	addrsList := addrs.SortedList()
@@ -448,7 +448,7 @@ func (vm *VM) getAllUTXOs(addrs ids.ShortSet) ([]*djtx.UTXO, error) {
 	return utxos, nil
 }
 
-func (vm *VM) getAllUniqueAddressUTXOs(addr ids.ShortID, seen *ids.Set, utxos *[]*djtx.UTXO) error {
+func (vm *VM) getAllUniqueAddressUTXOs(addr ids.ShortID, seen *ids.Set, utxos *[]*avax.UTXO) error {
 	lastIndex := ids.Empty
 	addrBytes := addr.Bytes()
 
@@ -516,8 +516,8 @@ func (vm *VM) initGenesis(genesisBytes []byte) error {
 		return err
 	}
 
-	// secure this by defaulting to djtxAsset
-	vm.feeAssetID = vm.ctx.DJTXAssetID
+	// secure this by defaulting to avaxAsset
+	vm.feeAssetID = vm.ctx.AVAXAssetID
 
 	for index, genesisTx := range genesis.Txs {
 		if len(genesisTx.Outs) != 0 {
@@ -626,7 +626,7 @@ func (vm *VM) issueTx(tx snowstorm.Tx) {
 	}
 }
 
-func (vm *VM) getUTXO(utxoID *djtx.UTXOID) (*djtx.UTXO, error) {
+func (vm *VM) getUTXO(utxoID *avax.UTXOID) (*avax.UTXO, error) {
 	inputID := utxoID.InputID()
 	utxo, err := vm.state.GetUTXO(inputID)
 	if err == nil {
@@ -704,7 +704,7 @@ func (vm *VM) verifyFxUsage(fxID int, assetID ids.ID) bool {
 	return fxIDs.Contains(uint(fxID))
 }
 
-func (vm *VM) verifyTransferOfUTXO(tx UnsignedTx, in *djtx.TransferableInput, cred verify.Verifiable, utxo *djtx.UTXO) error {
+func (vm *VM) verifyTransferOfUTXO(tx UnsignedTx, in *avax.TransferableInput, cred verify.Verifiable, utxo *avax.UTXO) error {
 	fxIndex, err := vm.getFx(cred)
 	if err != nil {
 		return err
@@ -724,7 +724,7 @@ func (vm *VM) verifyTransferOfUTXO(tx UnsignedTx, in *djtx.TransferableInput, cr
 	return fx.VerifyTransfer(tx, in.In, cred, utxo.Out)
 }
 
-func (vm *VM) verifyTransfer(tx UnsignedTx, in *djtx.TransferableInput, cred verify.Verifiable) error {
+func (vm *VM) verifyTransfer(tx UnsignedTx, in *avax.TransferableInput, cred verify.Verifiable) error {
 	utxo, err := vm.getUTXO(&in.UTXOID)
 	if err != nil {
 		return err
@@ -772,7 +772,7 @@ func (vm *VM) LoadUser(
 	password string,
 	addrsToUse ids.ShortSet,
 ) (
-	[]*djtx.UTXO,
+	[]*avax.UTXO,
 	*secp256k1fx.Keychain,
 	error,
 ) {
@@ -800,19 +800,19 @@ func (vm *VM) LoadUser(
 }
 
 func (vm *VM) Spend(
-	utxos []*djtx.UTXO,
+	utxos []*avax.UTXO,
 	kc *secp256k1fx.Keychain,
 	amounts map[ids.ID]uint64,
 ) (
 	map[ids.ID]uint64,
-	[]*djtx.TransferableInput,
+	[]*avax.TransferableInput,
 	[][]*crypto.PrivateKeySECP256K1R,
 	error,
 ) {
 	amountsSpent := make(map[ids.ID]uint64, len(amounts))
 	time := vm.clock.Unix()
 
-	ins := []*djtx.TransferableInput{}
+	ins := []*avax.TransferableInput{}
 	keys := [][]*crypto.PrivateKeySECP256K1R{}
 	for _, utxo := range utxos {
 		assetID := utxo.AssetID()
@@ -829,7 +829,7 @@ func (vm *VM) Spend(
 			// this utxo can't be spent with the current keys right now
 			continue
 		}
-		input, ok := inputIntf.(djtx.TransferableIn)
+		input, ok := inputIntf.(avax.TransferableIn)
 		if !ok {
 			// this input doesn't have an amount, so I don't care about it here
 			continue
@@ -842,9 +842,9 @@ func (vm *VM) Spend(
 		amountsSpent[assetID] = newAmountSpent
 
 		// add the new input to the array
-		ins = append(ins, &djtx.TransferableInput{
+		ins = append(ins, &avax.TransferableInput{
 			UTXOID: utxo.UTXOID,
-			Asset:  djtx.Asset{ID: assetID},
+			Asset:  avax.Asset{ID: assetID},
 			In:     input,
 		})
 		// add the required keys to the array
@@ -861,12 +861,12 @@ func (vm *VM) Spend(
 		}
 	}
 
-	djtx.SortTransferableInputsWithSigners(ins, keys)
+	avax.SortTransferableInputsWithSigners(ins, keys)
 	return amountsSpent, ins, keys, nil
 }
 
 func (vm *VM) SpendNFT(
-	utxos []*djtx.UTXO,
+	utxos []*avax.UTXO,
 	kc *secp256k1fx.Keychain,
 	assetID ids.ID,
 	groupID uint32,
@@ -912,7 +912,7 @@ func (vm *VM) SpendNFT(
 		// add the new operation to the array
 		ops = append(ops, &Operation{
 			Asset:   utxo.Asset,
-			UTXOIDs: []*djtx.UTXOID{&utxo.UTXOID},
+			UTXOIDs: []*avax.UTXOID{&utxo.UTXOID},
 			Op: &nftfx.TransferOperation{
 				Input: secp256k1fx.Input{
 					SigIndices: indices,
@@ -940,18 +940,18 @@ func (vm *VM) SpendNFT(
 }
 
 func (vm *VM) SpendAll(
-	utxos []*djtx.UTXO,
+	utxos []*avax.UTXO,
 	kc *secp256k1fx.Keychain,
 ) (
 	map[ids.ID]uint64,
-	[]*djtx.TransferableInput,
+	[]*avax.TransferableInput,
 	[][]*crypto.PrivateKeySECP256K1R,
 	error,
 ) {
 	amountsSpent := make(map[ids.ID]uint64)
 	time := vm.clock.Unix()
 
-	ins := []*djtx.TransferableInput{}
+	ins := []*avax.TransferableInput{}
 	keys := [][]*crypto.PrivateKeySECP256K1R{}
 	for _, utxo := range utxos {
 		assetID := utxo.AssetID()
@@ -962,7 +962,7 @@ func (vm *VM) SpendAll(
 			// this utxo can't be spent with the current keys right now
 			continue
 		}
-		input, ok := inputIntf.(djtx.TransferableIn)
+		input, ok := inputIntf.(avax.TransferableIn)
 		if !ok {
 			// this input doesn't have an amount, so I don't care about it here
 			continue
@@ -975,21 +975,21 @@ func (vm *VM) SpendAll(
 		amountsSpent[assetID] = newAmountSpent
 
 		// add the new input to the array
-		ins = append(ins, &djtx.TransferableInput{
+		ins = append(ins, &avax.TransferableInput{
 			UTXOID: utxo.UTXOID,
-			Asset:  djtx.Asset{ID: assetID},
+			Asset:  avax.Asset{ID: assetID},
 			In:     input,
 		})
 		// add the required keys to the array
 		keys = append(keys, signers)
 	}
 
-	djtx.SortTransferableInputsWithSigners(ins, keys)
+	avax.SortTransferableInputsWithSigners(ins, keys)
 	return amountsSpent, ins, keys, nil
 }
 
 func (vm *VM) Mint(
-	utxos []*djtx.UTXO,
+	utxos []*avax.UTXO,
 	kc *secp256k1fx.Keychain,
 	amounts map[ids.ID]uint64,
 	to ids.ShortID,
@@ -1031,7 +1031,7 @@ func (vm *VM) Mint(
 		// add the operation to the array
 		ops = append(ops, &Operation{
 			Asset:   utxo.Asset,
-			UTXOIDs: []*djtx.UTXOID{&utxo.UTXOID},
+			UTXOIDs: []*avax.UTXOID{&utxo.UTXOID},
 			Op: &secp256k1fx.MintOperation{
 				MintInput:  *in,
 				MintOutput: *out,
@@ -1062,7 +1062,7 @@ func (vm *VM) Mint(
 }
 
 func (vm *VM) MintNFT(
-	utxos []*djtx.UTXO,
+	utxos []*avax.UTXO,
 	kc *secp256k1fx.Keychain,
 	assetID ids.ID,
 	payload []byte,
@@ -1104,8 +1104,8 @@ func (vm *VM) MintNFT(
 
 		// add the operation to the array
 		ops = append(ops, &Operation{
-			Asset: djtx.Asset{ID: assetID},
-			UTXOIDs: []*djtx.UTXOID{
+			Asset: avax.Asset{ID: assetID},
+			UTXOIDs: []*avax.UTXOID{
 				&utxo.UTXOID,
 			},
 			Op: &nftfx.MintOperation{

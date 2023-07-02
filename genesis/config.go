@@ -25,7 +25,7 @@ type LockedAmount struct {
 
 type Allocation struct {
 	ETHAddr        ids.ShortID    `json:"ethAddr"`
-	DJTXAddr       ids.ShortID    `json:"djtxAddr"`
+	AVAXAddr       ids.ShortID    `json:"avaxAddr"`
 	InitialAmount  uint64         `json:"initialAmount"`
 	UnlockSchedule []LockedAmount `json:"unlockSchedule"`
 }
@@ -36,12 +36,12 @@ func (a Allocation) Unparse(networkID uint32) (UnparsedAllocation, error) {
 		UnlockSchedule: a.UnlockSchedule,
 		ETHAddr:        "0x" + hex.EncodeToString(a.ETHAddr.Bytes()),
 	}
-	djtxAddr, err := formatting.FormatAddress(
+	avaxAddr, err := formatting.FormatAddress(
 		"X",
 		constants.GetHRP(networkID),
-		a.DJTXAddr.Bytes(),
+		a.AVAXAddr.Bytes(),
 	)
-	ua.DJTXAddr = djtxAddr
+	ua.AVAXAddr = avaxAddr
 	return ua, err
 }
 
@@ -52,14 +52,14 @@ type Staker struct {
 }
 
 func (s Staker) Unparse(networkID uint32) (UnparsedStaker, error) {
-	djtxAddr, err := formatting.FormatAddress(
+	avaxAddr, err := formatting.FormatAddress(
 		"X",
 		constants.GetHRP(networkID),
 		s.RewardAddress.Bytes(),
 	)
 	return UnparsedStaker{
 		NodeID:        s.NodeID.PrefixedString(constants.NodeIDPrefix),
-		RewardAddress: djtxAddr,
+		RewardAddress: avaxAddr,
 		DelegationFee: s.DelegationFee,
 	}, err
 }
@@ -101,7 +101,7 @@ func (c Config) Unparse() (UnparsedConfig, error) {
 		uc.Allocations[i] = ua
 	}
 	for i, isa := range c.InitialStakedFunds {
-		djtxAddr, err := formatting.FormatAddress(
+		avaxAddr, err := formatting.FormatAddress(
 			"X",
 			constants.GetHRP(uc.NetworkID),
 			isa.Bytes(),
@@ -109,7 +109,7 @@ func (c Config) Unparse() (UnparsedConfig, error) {
 		if err != nil {
 			return uc, err
 		}
-		uc.InitialStakedFunds[i] = djtxAddr
+		uc.InitialStakedFunds[i] = avaxAddr
 	}
 	for i, is := range c.InitialStakers {
 		uis, err := is.Unparse(c.NetworkID)
@@ -145,9 +145,9 @@ var (
 	// genesis.
 	MainnetConfig Config
 
-	// FujiConfig is the config that should be used to generate the fuji
+	// TahoeConfig is the config that should be used to generate the tahoe
 	// genesis.
-	FujiConfig Config
+	TahoeConfig Config
 
 	// LocalConfig is the config that should be used to generate a local
 	// genesis.
@@ -156,13 +156,13 @@ var (
 
 func init() {
 	unparsedMainnetConfig := UnparsedConfig{}
-	unparsedFujiConfig := UnparsedConfig{}
+	unparsedTahoeConfig := UnparsedConfig{}
 	unparsedLocalConfig := UnparsedConfig{}
 
 	errs := wrappers.Errs{}
 	errs.Add(
 		json.Unmarshal([]byte(mainnetGenesisConfigJSON), &unparsedMainnetConfig),
-		json.Unmarshal([]byte(fujiGenesisConfigJSON), &unparsedFujiConfig),
+		json.Unmarshal([]byte(tahoeGenesisConfigJSON), &unparsedTahoeConfig),
 		json.Unmarshal([]byte(localGenesisConfigJSON), &unparsedLocalConfig),
 	)
 	if errs.Errored() {
@@ -173,9 +173,9 @@ func init() {
 	errs.Add(err)
 	MainnetConfig = mainnetConfig
 
-	fujiConfig, err := unparsedFujiConfig.Parse()
+	tahoeConfig, err := unparsedTahoeConfig.Parse()
 	errs.Add(err)
-	FujiConfig = fujiConfig
+	TahoeConfig = tahoeConfig
 
 	localConfig, err := unparsedLocalConfig.Parse()
 	errs.Add(err)
@@ -190,8 +190,8 @@ func GetConfig(networkID uint32) *Config {
 	switch networkID {
 	case constants.MainnetID:
 		return &MainnetConfig
-	case constants.FujiID:
-		return &FujiConfig
+	case constants.TahoeID:
+		return &TahoeConfig
 	case constants.LocalID:
 		return &LocalConfig
 	default:

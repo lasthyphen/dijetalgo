@@ -9,7 +9,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/codec"
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/snow"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 )
 
@@ -44,7 +44,7 @@ func (t *OperationTx) Init(vm *VM) error {
 func (t *OperationTx) Operations() []*Operation { return t.Ops }
 
 // InputUTXOs track which UTXOs this transaction is consuming.
-func (t *OperationTx) InputUTXOs() []*djtx.UTXOID {
+func (t *OperationTx) InputUTXOs() []*avax.UTXOID {
 	utxos := t.BaseTx.InputUTXOs()
 	for _, op := range t.Ops {
 		utxos = append(utxos, op.UTXOIDs...)
@@ -76,19 +76,19 @@ func (t *OperationTx) AssetIDs() ids.Set {
 func (t *OperationTx) NumCredentials() int { return t.BaseTx.NumCredentials() + len(t.Ops) }
 
 // UTXOs returns the UTXOs transaction is producing.
-func (t *OperationTx) UTXOs() []*djtx.UTXO {
+func (t *OperationTx) UTXOs() []*avax.UTXO {
 	txID := t.ID()
 	utxos := t.BaseTx.UTXOs()
 
 	for _, op := range t.Ops {
 		asset := op.AssetID()
 		for _, out := range op.Op.Outs() {
-			utxos = append(utxos, &djtx.UTXO{
-				UTXOID: djtx.UTXOID{
+			utxos = append(utxos, &avax.UTXO{
+				UTXOID: avax.UTXOID{
 					TxID:        txID,
 					OutputIndex: uint32(len(utxos)),
 				},
-				Asset: djtx.Asset{ID: asset},
+				Asset: avax.Asset{ID: asset},
 				Out:   out,
 			})
 		}

@@ -9,7 +9,7 @@ import (
 
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/snow"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 
 	safemath "github.com/lasthyphen/dijetalgo/utils/math"
 )
@@ -23,7 +23,7 @@ var _ UnsignedProposalTx = &UnsignedAdvanceTimeTx{}
 //   * proposed timestamp > [current chain time]
 //   * proposed timestamp <= [time for next staker set change]
 type UnsignedAdvanceTimeTx struct {
-	djtx.Metadata
+	avax.Metadata
 
 	// Unix time this block proposes increasing the timestamp to
 	Time uint64 `serialize:"true" json:"time"`

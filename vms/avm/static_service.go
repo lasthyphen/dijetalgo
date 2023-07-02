@@ -16,7 +16,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/utils/formatting"
 	"github.com/lasthyphen/dijetalgo/utils/wrappers"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 	"github.com/lasthyphen/dijetalgo/vms/nftfx"
 	"github.com/lasthyphen/dijetalgo/vms/propertyfx"
@@ -28,9 +28,9 @@ import (
 var (
 	errUnknownAssetType = errors.New("unknown asset type")
 
-	_ djtx.TransferableIn  = &secp256k1fx.TransferInput{}
+	_ avax.TransferableIn  = &secp256k1fx.TransferInput{}
 	_ verify.State         = &secp256k1fx.MintOutput{}
-	_ djtx.TransferableOut = &secp256k1fx.TransferOutput{}
+	_ avax.TransferableOut = &secp256k1fx.TransferOutput{}
 	_ FxOperation          = &secp256k1fx.MintOperation{}
 	_ verify.Verifiable    = &secp256k1fx.Credential{}
 
@@ -92,7 +92,7 @@ func (ss *StaticService) BuildGenesis(_ *http.Request, args *BuildGenesisArgs, r
 		asset := GenesisAsset{
 			Alias: assetAlias,
 			CreateAssetTx: CreateAssetTx{
-				BaseTx: BaseTx{BaseTx: djtx.BaseTx{
+				BaseTx: BaseTx{BaseTx: avax.BaseTx{
 					NetworkID:    uint32(args.NetworkID),
 					BlockchainID: ids.Empty,
 					Memo:         assetMemo,

@@ -12,7 +12,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/snow"
 	"github.com/lasthyphen/dijetalgo/utils/math"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 )
 
@@ -28,13 +28,13 @@ var (
 //
 // If this transaction is accepted and the next block accepted is a Commit
 // block, the validator is removed and the address that the validator specified
-// receives the staked DJTX as well as a validating reward.
+// receives the staked AVAX as well as a validating reward.
 //
 // If this transaction is accepted and the next block accepted is an Abort
 // block, the validator is removed and the address that the validator specified
-// receives the staked DJTX but no reward.
+// receives the staked AVAX but no reward.
 type UnsignedRewardValidatorTx struct {
-	djtx.Metadata
+	avax.Metadata
 
 	// ID of the tx that created the delegator/validator being removed/rewarded
 	TxID ids.ID `serialize:"true" json:"txID"`
@@ -148,12 +148,12 @@ func (tx *UnsignedRewardValidatorTx) Execute(
 	case *UnsignedAddValidatorTx:
 		// Refund the stake here
 		for i, out := range uStakerTx.Stake {
-			utxo := &djtx.UTXO{
-				UTXOID: djtx.UTXOID{
+			utxo := &avax.UTXO{
+				UTXOID: avax.UTXOID{
 					TxID:        tx.TxID,
 					OutputIndex: uint32(len(uStakerTx.Outs) + i),
 				},
-				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
+				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
 				Out:   out.Output(),
 			}
 			onCommitState.AddUTXO(utxo)
@@ -173,12 +173,12 @@ func (tx *UnsignedRewardValidatorTx) Execute(
 				return nil, nil, nil, nil, permError{errInvalidState}
 			}
 
-			utxo := &djtx.UTXO{
-				UTXOID: djtx.UTXOID{
+			utxo := &avax.UTXO{
+				UTXOID: avax.UTXOID{
 					TxID:        tx.TxID,
 					OutputIndex: uint32(len(uStakerTx.Outs) + len(uStakerTx.Stake)),
 				},
-				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
+				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
 				Out:   out,
 			}
 
@@ -192,12 +192,12 @@ func (tx *UnsignedRewardValidatorTx) Execute(
 	case *UnsignedAddDelegatorTx:
 		// Refund the stake here
 		for i, out := range uStakerTx.Stake {
-			utxo := &djtx.UTXO{
-				UTXOID: djtx.UTXOID{
+			utxo := &avax.UTXO{
+				UTXOID: avax.UTXOID{
 					TxID:        tx.TxID,
 					OutputIndex: uint32(len(uStakerTx.Outs) + i),
 				},
-				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
+				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
 				Out:   out.Output(),
 			}
 			onCommitState.AddUTXO(utxo)
@@ -242,12 +242,12 @@ func (tx *UnsignedRewardValidatorTx) Execute(
 			if !ok {
 				return nil, nil, nil, nil, permError{errInvalidState}
 			}
-			utxo := &djtx.UTXO{
-				UTXOID: djtx.UTXOID{
+			utxo := &avax.UTXO{
+				UTXOID: avax.UTXOID{
 					TxID:        tx.TxID,
 					OutputIndex: uint32(len(uStakerTx.Outs) + len(uStakerTx.Stake)),
 				},
-				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
+				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
 				Out:   out,
 			}
 
@@ -269,12 +269,12 @@ func (tx *UnsignedRewardValidatorTx) Execute(
 			if !ok {
 				return nil, nil, nil, nil, permError{errInvalidState}
 			}
-			utxo := &djtx.UTXO{
-				UTXOID: djtx.UTXOID{
+			utxo := &avax.UTXO{
+				UTXOID: avax.UTXOID{
 					TxID:        tx.TxID,
 					OutputIndex: uint32(len(uStakerTx.Outs) + len(uStakerTx.Stake) + offset),
 				},
-				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
+				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
 				Out:   out,
 			}
 

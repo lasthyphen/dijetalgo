@@ -2,7 +2,7 @@
 
 [Unit]
 Description=AvalancheGo node
-Documentation=https://docs.djtx.network/
+Documentation=https://docs.avax.network/
 After=network.target
 StartLimitIntervalSec=0
 

@@ -12,7 +12,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/codec"
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/snow"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 )
 
 const (
@@ -61,18 +61,18 @@ func (t *CreateAssetTx) Init(vm *VM) error {
 func (t *CreateAssetTx) InitialStates() []*InitialState { return t.States }
 
 // UTXOs returns the UTXOs transaction is producing.
-func (t *CreateAssetTx) UTXOs() []*djtx.UTXO {
+func (t *CreateAssetTx) UTXOs() []*avax.UTXO {
 	txID := t.ID()
 	utxos := t.BaseTx.UTXOs()
 
 	for _, state := range t.States {
 		for _, out := range state.Outs {
-			utxos = append(utxos, &djtx.UTXO{
-				UTXOID: djtx.UTXOID{
+			utxos = append(utxos, &avax.UTXO{
+				UTXOID: avax.UTXOID{
 					TxID:        txID,
 					OutputIndex: uint32(len(utxos)),
 				},
-				Asset: djtx.Asset{
+				Asset: avax.Asset{
 					ID: txID,
 				},
 				Out: out,

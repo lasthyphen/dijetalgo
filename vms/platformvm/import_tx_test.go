@@ -12,7 +12,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
 	"github.com/lasthyphen/dijetalgo/utils/logging"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
 
@@ -56,12 +56,12 @@ func TestNewImportTx(t *testing.T) {
 		peerSharedMemory := m.NewSharedMemory(avmID)
 
 		// #nosec G404
-		utxo := &djtx.UTXO{
-			UTXOID: djtx.UTXOID{
+		utxo := &avax.UTXO{
+			UTXOID: avax.UTXOID{
 				TxID:        ids.GenerateTestID(),
 				OutputIndex: rand.Uint32(),
 			},
-			Asset: djtx.Asset{ID: djtxAssetID},
+			Asset: avax.Asset{ID: avaxAssetID},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: amt,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -107,7 +107,7 @@ func TestNewImportTx(t *testing.T) {
 
 	to := ids.GenerateTestShortID()
 	for _, tt := range tests {
-		vm.AtomicUTXOManager = djtx.NewAtomicUTXOManager(tt.sharedMemory, Codec)
+		vm.AtomicUTXOManager = avax.NewAtomicUTXOManager(tt.sharedMemory, Codec)
 		tx, err := vm.newImportTx(avmID, to, tt.recipientKeys, ids.ShortEmpty)
 		if err != nil {
 			if !tt.shouldErr {

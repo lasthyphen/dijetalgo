@@ -21,7 +21,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/utils/constants"
 	"github.com/lasthyphen/dijetalgo/utils/hashing"
 	"github.com/lasthyphen/dijetalgo/utils/wrappers"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/platformvm/uptime"
 
 	safemath "github.com/lasthyphen/dijetalgo/utils/math"
@@ -192,13 +192,13 @@ type internalStateImpl struct {
 	txCache  cache.Cacher             // cache of txID -> {*Tx, Status} if the entry is nil, it is not in the database
 	txDB     database.Database
 
-	addedRewardUTXOs map[ids.ID][]*djtx.UTXO // map of txID -> []*UTXO
+	addedRewardUTXOs map[ids.ID][]*avax.UTXO // map of txID -> []*UTXO
 	rewardUTXOsCache cache.Cacher            // cache of txID -> []*UTXO
 	rewardUTXODB     database.Database
 
-	modifiedUTXOs map[ids.ID]*djtx.UTXO // map of modified UTXOID -> *UTXO if the UTXO is nil, it has been removed
+	modifiedUTXOs map[ids.ID]*avax.UTXO // map of modified UTXOID -> *UTXO if the UTXO is nil, it has been removed
 	utxoDB        database.Database
-	utxoState     djtx.UTXOState
+	utxoState     avax.UTXOState
 
 	cachedSubnets []*Tx // nil if the subnets haven't been loaded
 	addedSubnets  []*Tx
@@ -287,10 +287,10 @@ func newInternalStateDatabases(vm *VM, db database.Database) *internalStateImpl 
 		addedTxs: make(map[ids.ID]*txStatusImpl),
 		txDB:     prefixdb.New(txPrefix, baseDB),
 
-		addedRewardUTXOs: make(map[ids.ID][]*djtx.UTXO),
+		addedRewardUTXOs: make(map[ids.ID][]*avax.UTXO),
 		rewardUTXODB:     rewardUTXODB,
 
-		modifiedUTXOs: make(map[ids.ID]*djtx.UTXO),
+		modifiedUTXOs: make(map[ids.ID]*avax.UTXO),
 		utxoDB:        utxoDB,
 
 		subnetBaseDB: subnetBaseDB,
@@ -308,7 +308,7 @@ func (st *internalStateImpl) initCaches() {
 	st.blockCache = &cache.LRU{Size: blockCacheSize}
 	st.txCache = &cache.LRU{Size: txCacheSize}
 	st.rewardUTXOsCache = &cache.LRU{Size: rewardUTXOsCacheSize}
-	st.utxoState = djtx.NewUTXOState(st.utxoDB, GenesisCodec)
+	st.utxoState = avax.NewUTXOState(st.utxoDB, GenesisCodec)
 	st.chainCache = &cache.LRU{Size: chainCacheSize}
 	st.chainDBCache = &cache.LRU{Size: chainDBCacheSize}
 }
@@ -350,7 +350,7 @@ func (st *internalStateImpl) initMeteredCaches(namespace string, metrics prometh
 		return err
 	}
 
-	utxoState, err := djtx.NewMeteredUTXOState(st.utxoDB, GenesisCodec, namespace, metrics)
+	utxoState, err := avax.NewMeteredUTXOState(st.utxoDB, GenesisCodec, namespace, metrics)
 	if err != nil {
 		return err
 	}
@@ -582,12 +582,12 @@ func (st *internalStateImpl) AddTx(tx *Tx, status Status) {
 	}
 }
 
-func (st *internalStateImpl) GetRewardUTXOs(txID ids.ID) ([]*djtx.UTXO, error) {
+func (st *internalStateImpl) GetRewardUTXOs(txID ids.ID) ([]*avax.UTXO, error) {
 	if utxos, exists := st.addedRewardUTXOs[txID]; exists {
 		return utxos, nil
 	}
 	if utxos, exists := st.rewardUTXOsCache.Get(txID); exists {
-		return utxos.([]*djtx.UTXO), nil
+		return utxos.([]*avax.UTXO), nil
 	}
 
 	rawTxDB := prefixdb.New(txID[:], st.rewardUTXODB)
@@ -595,9 +595,9 @@ func (st *internalStateImpl) GetRewardUTXOs(txID ids.ID) ([]*djtx.UTXO, error) {
 	it := txDB.NewIterator()
 	defer it.Release()
 
-	utxos := []*djtx.UTXO(nil)
+	utxos := []*avax.UTXO(nil)
 	for it.Next() {
-		utxo := &djtx.UTXO{}
+		utxo := &avax.UTXO{}
 		if _, err := Codec.Unmarshal(it.Value(), utxo); err != nil {
 			return nil, err
 		}
@@ -611,11 +611,11 @@ func (st *internalStateImpl) GetRewardUTXOs(txID ids.ID) ([]*djtx.UTXO, error) {
 	return utxos, nil
 }
 
-func (st *internalStateImpl) AddRewardUTXO(txID ids.ID, utxo *djtx.UTXO) {
+func (st *internalStateImpl) AddRewardUTXO(txID ids.ID, utxo *avax.UTXO) {
 	st.addedRewardUTXOs[txID] = append(st.addedRewardUTXOs[txID], utxo)
 }
 
-func (st *internalStateImpl) GetUTXO(utxoID ids.ID) (*djtx.UTXO, error) {
+func (st *internalStateImpl) GetUTXO(utxoID ids.ID) (*avax.UTXO, error) {
 	if utxo, exists := st.modifiedUTXOs[utxoID]; exists {
 		if utxo == nil {
 			return nil, database.ErrNotFound
@@ -625,7 +625,7 @@ func (st *internalStateImpl) GetUTXO(utxoID ids.ID) (*djtx.UTXO, error) {
 	return st.utxoState.GetUTXO(utxoID)
 }
 
-func (st *internalStateImpl) AddUTXO(utxo *djtx.UTXO) {
+func (st *internalStateImpl) AddUTXO(utxo *avax.UTXO) {
 	st.modifiedUTXOs[utxo.InputID()] = utxo
 }
 

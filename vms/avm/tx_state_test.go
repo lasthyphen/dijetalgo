@@ -15,7 +15,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
 	"github.com/lasthyphen/dijetalgo/utils/units"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
 
@@ -31,17 +31,17 @@ func TestTxState(t *testing.T) {
 	_, err = s.GetTx(ids.Empty)
 	assert.Equal(database.ErrNotFound, err)
 
-	tx := &Tx{UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
+	tx := &Tx{UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
 		NetworkID:    networkID,
 		BlockchainID: chainID,
-		Ins: []*djtx.TransferableInput{{
-			UTXOID: djtx.UTXOID{
+		Ins: []*avax.TransferableInput{{
+			UTXOID: avax.UTXOID{
 				TxID:        ids.Empty,
 				OutputIndex: 0,
 			},
-			Asset: djtx.Asset{ID: assetID},
+			Asset: avax.Asset{ID: assetID},
 			In: &secp256k1fx.TransferInput{
-				Amt: 20 * units.KiloDjtx,
+				Amt: 20 * units.KiloAvax,
 				Input: secp256k1fx.Input{
 					SigIndices: []uint32{
 						0,

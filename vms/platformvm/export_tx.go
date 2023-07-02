@@ -13,7 +13,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/snow"
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
 	"github.com/lasthyphen/dijetalgo/utils/math"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
 
@@ -34,7 +34,7 @@ type UnsignedExportTx struct {
 	DestinationChain ids.ID `serialize:"true" json:"destinationChain"`
 
 	// Outputs that are exported to the chain
-	ExportedOutputs []*djtx.TransferableOutput `serialize:"true" json:"exportedOutputs"`
+	ExportedOutputs []*avax.TransferableOutput `serialize:"true" json:"exportedOutputs"`
 }
 
 // InitCtx sets the FxID fields in the inputs and outputs of this
@@ -77,7 +77,7 @@ func (tx *UnsignedExportTx) SyntacticVerify(ctx *snow.Context) error {
 			return errWrongLocktime
 		}
 	}
-	if !djtx.IsSortedTransferableOutputs(tx.ExportedOutputs, Codec) {
+	if !avax.IsSortedTransferableOutputs(tx.ExportedOutputs, Codec) {
 		return errOutputsNotSorted
 	}
 
@@ -101,12 +101,12 @@ func (tx *UnsignedExportTx) Execute(
 		return nil, permError{err}
 	}
 
-	outs := make([]*djtx.TransferableOutput, len(tx.Outs)+len(tx.ExportedOutputs))
+	outs := make([]*avax.TransferableOutput, len(tx.Outs)+len(tx.ExportedOutputs))
 	copy(outs, tx.Outs)
 	copy(outs[len(tx.Outs):], tx.ExportedOutputs)
 
 	// Verify the flowcheck
-	if err := vm.semanticVerifySpend(parentState, tx, tx.Ins, outs, stx.Creds, vm.TxFee, vm.ctx.DJTXAssetID); err != nil {
+	if err := vm.semanticVerifySpend(parentState, tx, tx.Ins, outs, stx.Creds, vm.TxFee, vm.ctx.AVAXAssetID); err != nil {
 		switch err.(type) {
 		case permError:
 			return nil, permError{
@@ -129,7 +129,7 @@ func (tx *UnsignedExportTx) Execute(
 	consumeInputs(newState, tx.Ins)
 	// Produce the UTXOS
 	txID := tx.ID()
-	produceOutputs(newState, txID, vm.ctx.DJTXAssetID, tx.Outs)
+	produceOutputs(newState, txID, vm.ctx.AVAXAssetID, tx.Outs)
 	return newState, nil
 }
 
@@ -139,12 +139,12 @@ func (tx *UnsignedExportTx) Accept(ctx *snow.Context, batch database.Batch) erro
 
 	elems := make([]*atomic.Element, len(tx.ExportedOutputs))
 	for i, out := range tx.ExportedOutputs {
-		utxo := &djtx.UTXO{
-			UTXOID: djtx.UTXOID{
+		utxo := &avax.UTXO{
+			UTXOID: avax.UTXOID{
 				TxID:        txID,
 				OutputIndex: uint32(len(tx.Outs) + i),
 			},
-			Asset: djtx.Asset{ID: out.AssetID()},
+			Asset: avax.Asset{ID: out.AssetID()},
 			Out:   out.Out,
 		}
 
@@ -157,7 +157,7 @@ func (tx *UnsignedExportTx) Accept(ctx *snow.Context, batch database.Batch) erro
 			Key:   utxoID[:],
 			Value: utxoBytes,
 		}
-		if out, ok := utxo.Out.(djtx.Addressable); ok {
+		if out, ok := utxo.Out.(avax.Addressable); ok {
 			elem.Traits = out.Addresses()
 		}
 
@@ -190,15 +190,15 @@ func (vm *VM) newExportTx(
 
 	// Create the transaction
 	utx := &UnsignedExportTx{
-		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
+		BaseTx: BaseTx{BaseTx: avax.BaseTx{
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 			Ins:          ins,
 			Outs:         outs, // Non-exported outputs
 		}},
 		DestinationChain: chainID,
-		ExportedOutputs: []*djtx.TransferableOutput{{ // Exported to X-Chain
-			Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
+		ExportedOutputs: []*avax.TransferableOutput{{ // Exported to X-Chain
+			Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: amount,
 				OutputOwners: secp256k1fx.OutputOwners{

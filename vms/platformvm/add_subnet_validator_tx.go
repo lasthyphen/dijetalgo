@@ -13,7 +13,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/snow"
 	"github.com/lasthyphen/dijetalgo/utils/constants"
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 )
 
@@ -221,7 +221,7 @@ func (tx *UnsignedAddSubnetValidatorTx) Execute(
 		}
 
 		// Verify the flowcheck
-		if err := vm.semanticVerifySpend(parentState, tx, tx.Ins, tx.Outs, baseTxCreds, vm.TxFee, vm.ctx.DJTXAssetID); err != nil {
+		if err := vm.semanticVerifySpend(parentState, tx, tx.Ins, tx.Outs, baseTxCreds, vm.TxFee, vm.ctx.AVAXAssetID); err != nil {
 			return nil, nil, nil, nil, err
 		}
 
@@ -242,14 +242,14 @@ func (tx *UnsignedAddSubnetValidatorTx) Execute(
 	consumeInputs(onCommitState, tx.Ins)
 	// Produce the UTXOS
 	txID := tx.ID()
-	produceOutputs(onCommitState, txID, vm.ctx.DJTXAssetID, tx.Outs)
+	produceOutputs(onCommitState, txID, vm.ctx.AVAXAssetID, tx.Outs)
 
 	// Set up the state if this tx is aborted
 	onAbortState := newVersionedState(parentState, currentStakers, pendingStakers)
 	// Consume the UTXOS
 	consumeInputs(onAbortState, tx.Ins)
 	// Produce the UTXOS
-	produceOutputs(onAbortState, txID, vm.ctx.DJTXAssetID, tx.Outs)
+	produceOutputs(onAbortState, txID, vm.ctx.AVAXAssetID, tx.Outs)
 
 	return onCommitState, onAbortState, nil, nil, nil
 }
@@ -283,7 +283,7 @@ func (vm *VM) newAddSubnetValidatorTx(
 
 	// Create the tx
 	utx := &UnsignedAddSubnetValidatorTx{
-		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
+		BaseTx: BaseTx{BaseTx: avax.BaseTx{
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 			Ins:          ins,

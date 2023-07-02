@@ -1,4 +1,4 @@
-// (c) 2019-2020, Ava Labs, Inc. All rights reserved.
+// Copyright (C) 2019-2022, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package genesis
@@ -13,9 +13,19 @@ func getIPs(networkID uint32) []string {
 	switch networkID {
 	case constants.MainnetID:
 		return []string{
+			"127.0.0.1:9651",
+			"127.0.0.1:9653",
+			"127.0.0.1:9655",
+			"127.0.0.1:9657",
+			"127.0.0.1:9659",
 		}
-	case constants.FujiID:
+	case constants.TahoeID:
 		return []string{
+			"127.0.0.1:9651",
+			"127.0.0.1:9653",
+			"127.0.0.1:9655",
+			"127.0.0.1:9657",
+			"127.0.0.1:9659",
 		}
 	default:
 		return nil
@@ -27,9 +37,19 @@ func getNodeIDs(networkID uint32) []string {
 	switch networkID {
 	case constants.MainnetID:
 		return []string{
+			"NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg",
+			"NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ",
+			"NodeID-NFBbbJ4qCmNaCzeW7sxErhvWqvEQMnYcN",
+			"NodeID-GWPcbFJZFfZreETSoWjPimr846mXEKCtu",
+			"NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5",
 		}
-	case constants.FujiID:
+	case constants.TahoeID:
 		return []string{
+			"NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg",
+			"NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ",
+			"NodeID-NFBbbJ4qCmNaCzeW7sxErhvWqvEQMnYcN",
+			"NodeID-GWPcbFJZFfZreETSoWjPimr846mXEKCtu",
+			"NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5",
 		}
 	default:
 		return nil

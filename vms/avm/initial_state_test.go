@@ -12,7 +12,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/codec/linearcodec"
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/utils/formatting"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
@@ -66,7 +66,7 @@ func TestInitialStateVerifyNilOutput(t *testing.T) {
 
 func TestInitialStateVerifyInvalidOutput(t *testing.T) {
 	c := linearcodec.NewDefault()
-	if err := c.RegisterType(&djtx.TestVerifiable{}); err != nil {
+	if err := c.RegisterType(&avax.TestVerifiable{}); err != nil {
 		t.Fatal(err)
 	}
 	m := codec.NewDefaultManager()
@@ -77,7 +77,7 @@ func TestInitialStateVerifyInvalidOutput(t *testing.T) {
 
 	is := InitialState{
 		FxIndex: 0,
-		Outs:    []verify.State{&djtx.TestVerifiable{Err: errors.New("")}},
+		Outs:    []verify.State{&avax.TestVerifiable{Err: errors.New("")}},
 	}
 	if err := is.Verify(m, numFxs); err == nil {
 		t.Fatalf("Should have errored due to an invalid output")
@@ -86,7 +86,7 @@ func TestInitialStateVerifyInvalidOutput(t *testing.T) {
 
 func TestInitialStateVerifyUnsortedOutputs(t *testing.T) {
 	c := linearcodec.NewDefault()
-	if err := c.RegisterType(&djtx.TestTransferable{}); err != nil {
+	if err := c.RegisterType(&avax.TestTransferable{}); err != nil {
 		t.Fatal(err)
 	}
 	m := codec.NewDefaultManager()
@@ -98,8 +98,8 @@ func TestInitialStateVerifyUnsortedOutputs(t *testing.T) {
 	is := InitialState{
 		FxIndex: 0,
 		Outs: []verify.State{
-			&djtx.TestTransferable{Val: 1},
-			&djtx.TestTransferable{Val: 0},
+			&avax.TestTransferable{Val: 1},
+			&avax.TestTransferable{Val: 0},
 		},
 	}
 	if err := is.Verify(m, numFxs); err == nil {

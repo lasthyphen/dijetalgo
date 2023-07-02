@@ -12,7 +12,7 @@ message InitializeRequest {
     bytes chainID = 3;
     bytes nodeID = 4;
     bytes xChainID = 5;
-    bytes djtxAssetID = 6;
+    bytes avaxAssetID = 6;
     bytes genesisBytes = 7;
     bytes upgradeBytes = 8;
     bytes configBytes = 9;

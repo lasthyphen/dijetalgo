@@ -10,12 +10,12 @@ import (
 	"github.com/lasthyphen/dijetalgo/codec/linearcodec"
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/snow"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 )
 
 type testOperable struct {
-	djtx.TestTransferable `serialize:"true"`
+	avax.TestTransferable `serialize:"true"`
 
 	Outputs []verify.State `serialize:"true"`
 }
@@ -45,7 +45,7 @@ func TestOperationVerifyEmpty(t *testing.T) {
 	}
 
 	op := &Operation{
-		Asset: djtx.Asset{ID: ids.Empty},
+		Asset: avax.Asset{ID: ids.Empty},
 	}
 	if err := op.Verify(m); err == nil {
 		t.Fatalf("Should have errored due to empty operation")
@@ -60,8 +60,8 @@ func TestOperationVerifyUTXOIDsNotSorted(t *testing.T) {
 	}
 
 	op := &Operation{
-		Asset: djtx.Asset{ID: ids.Empty},
-		UTXOIDs: []*djtx.UTXOID{
+		Asset: avax.Asset{ID: ids.Empty},
+		UTXOIDs: []*avax.UTXOID{
 			{
 				TxID:        ids.Empty,
 				OutputIndex: 1,
@@ -87,8 +87,8 @@ func TestOperationVerify(t *testing.T) {
 
 	assetID := ids.GenerateTestID()
 	op := &Operation{
-		Asset: djtx.Asset{ID: assetID},
-		UTXOIDs: []*djtx.UTXOID{
+		Asset: avax.Asset{ID: assetID},
+		UTXOIDs: []*avax.UTXOID{
 			{
 				TxID:        assetID,
 				OutputIndex: 1,
@@ -114,8 +114,8 @@ func TestOperationSorting(t *testing.T) {
 
 	ops := []*Operation{
 		{
-			Asset: djtx.Asset{ID: ids.Empty},
-			UTXOIDs: []*djtx.UTXOID{
+			Asset: avax.Asset{ID: ids.Empty},
+			UTXOIDs: []*avax.UTXOID{
 				{
 					TxID:        ids.Empty,
 					OutputIndex: 1,
@@ -124,8 +124,8 @@ func TestOperationSorting(t *testing.T) {
 			Op: &testOperable{},
 		},
 		{
-			Asset: djtx.Asset{ID: ids.Empty},
-			UTXOIDs: []*djtx.UTXOID{
+			Asset: avax.Asset{ID: ids.Empty},
+			UTXOIDs: []*avax.UTXOID{
 				{
 					TxID:        ids.Empty,
 					OutputIndex: 0,
@@ -142,8 +142,8 @@ func TestOperationSorting(t *testing.T) {
 		t.Fatalf("Should be sorted")
 	}
 	ops = append(ops, &Operation{
-		Asset: djtx.Asset{ID: ids.Empty},
-		UTXOIDs: []*djtx.UTXOID{
+		Asset: avax.Asset{ID: ids.Empty},
+		UTXOIDs: []*avax.UTXOID{
 			{
 				TxID:        ids.Empty,
 				OutputIndex: 1,

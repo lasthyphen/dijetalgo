@@ -20,7 +20,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/utils/math"
 	"github.com/lasthyphen/dijetalgo/utils/wrappers"
 	"github.com/lasthyphen/dijetalgo/vms/avm"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
 
@@ -182,12 +182,12 @@ func (service *Service) ImportKey(r *http.Request, args *ImportKeyArgs, reply *a
  */
 
 type GetBalanceResponse struct {
-	// Balance, in nDJTX, of the address
+	// Balance, in nAVAX, of the address
 	Balance            json.Uint64    `json:"balance"`
 	Unlocked           json.Uint64    `json:"unlocked"`
 	LockedStakeable    json.Uint64    `json:"lockedStakeable"`
 	LockedNotStakeable json.Uint64    `json:"lockedNotStakeable"`
-	UTXOIDs            []*djtx.UTXOID `json:"utxoIDs"`
+	UTXOIDs            []*avax.UTXOID `json:"utxoIDs"`
 }
 
 // GetBalance gets the balance of an address
@@ -429,7 +429,7 @@ func (service *Service) GetUTXOs(_ *http.Request, args *GetUTXOsArgs, response *
 	}
 
 	var (
-		utxos     []*djtx.UTXO
+		utxos     []*avax.UTXO
 		endAddr   ids.ShortID
 		endUTXOID ids.ID
 		err       error
@@ -624,7 +624,7 @@ func (service *Service) GetStakingAssetID(_ *http.Request, args *GetStakingAsset
 			args.SubnetID)
 	}
 
-	response.AssetID = service.vm.ctx.DJTXAssetID
+	response.AssetID = service.vm.ctx.AVAXAssetID
 	return nil
 }
 
@@ -914,7 +914,7 @@ type GetCurrentSupplyReply struct {
 	Supply json.Uint64 `json:"supply"`
 }
 
-// GetCurrentSupply returns an upper bound on the supply of DJTX in the system
+// GetCurrentSupply returns an upper bound on the supply of AVAX in the system
 func (service *Service) GetCurrentSupply(_ *http.Request, _ *struct{}, reply *GetCurrentSupplyReply) error {
 	service.vm.ctx.Log.Debug("Platform: GetCurrentSupply called")
 
@@ -1441,23 +1441,23 @@ func (service *Service) CreateSubnet(_ *http.Request, args *CreateSubnetArgs, re
 	return errs.Err
 }
 
-// ExportDJTXArgs are the arguments to ExportDJTX
-type ExportDJTXArgs struct {
+// ExportAVAXArgs are the arguments to ExportAVAX
+type ExportAVAXArgs struct {
 	// User, password, from addrs, change addr
 	api.JSONSpendHeader
 
-	// Amount of DJTX to send
+	// Amount of AVAX to send
 	Amount json.Uint64 `json:"amount"`
 
-	// ID of the address that will receive the DJTX. This address includes the
+	// ID of the address that will receive the AVAX. This address includes the
 	// chainID, which is used to determine what the destination chain is.
 	To string `json:"to"`
 }
 
-// ExportDJTX exports DJTX from the P-Chain to the X-Chain
+// ExportAVAX exports AVAX from the P-Chain to the X-Chain
 // It must be imported on the X-Chain to complete the transfer
-func (service *Service) ExportDJTX(_ *http.Request, args *ExportDJTXArgs, response *api.JSONTxIDChangeAddr) error {
-	service.vm.ctx.Log.Debug("Platform: ExportDJTX called")
+func (service *Service) ExportAVAX(_ *http.Request, args *ExportAVAXArgs, response *api.JSONTxIDChangeAddr) error {
+	service.vm.ctx.Log.Debug("Platform: ExportAVAX called")
 
 	if args.Amount == 0 {
 		return errNoAmount
@@ -1541,8 +1541,8 @@ func (service *Service) ExportDJTX(_ *http.Request, args *ExportDJTXArgs, respon
 	return errs.Err
 }
 
-// ImportDJTXArgs are the arguments to ImportDJTX
-type ImportDJTXArgs struct {
+// ImportAVAXArgs are the arguments to ImportAVAX
+type ImportAVAXArgs struct {
 	// User, password, from addrs, change addr
 	api.JSONSpendHeader
 
@@ -1553,10 +1553,10 @@ type ImportDJTXArgs struct {
 	To string `json:"to"`
 }
 
-// ImportDJTX issues a transaction to import DJTX from the X-chain. The DJTX
+// ImportAVAX issues a transaction to import AVAX from the X-chain. The AVAX
 // must have already been exported from the X-Chain.
-func (service *Service) ImportDJTX(_ *http.Request, args *ImportDJTXArgs, response *api.JSONTxIDChangeAddr) error {
-	service.vm.ctx.Log.Debug("Platform: ImportDJTX called")
+func (service *Service) ImportAVAX(_ *http.Request, args *ImportAVAXArgs, response *api.JSONTxIDChangeAddr) error {
+	service.vm.ctx.Log.Debug("Platform: ImportAVAX called")
 
 	// Parse the sourceCHain
 	chainID, err := service.vm.ctx.BCLookup.Lookup(args.SourceChain)
@@ -2172,7 +2172,7 @@ type GetStakeArgs struct {
 type GetStakeReply struct {
 	Staked json.Uint64 `json:"staked"`
 	// String representation of staked outputs
-	// Each is of type djtx.TransferableOutput
+	// Each is of type avax.TransferableOutput
 	Outputs []string `json:"stakedOutputs"`
 	// Encoding of [Outputs]
 	Encoding formatting.Encoding `json:"encoding"`
@@ -2182,8 +2182,8 @@ type GetStakeReply struct {
 // Returns:
 // 1) The total amount staked by addresses in [addrs]
 // 2) The staked outputs
-func (service *Service) getStakeHelper(tx *Tx, addrs ids.ShortSet) (uint64, []djtx.TransferableOutput, error) {
-	var outs []*djtx.TransferableOutput
+func (service *Service) getStakeHelper(tx *Tx, addrs ids.ShortSet) (uint64, []avax.TransferableOutput, error) {
+	var outs []*avax.TransferableOutput
 	switch staker := tx.UnsignedTx.(type) {
 	case *UnsignedAddDelegatorTx:
 		outs = staker.Stake
@@ -2200,12 +2200,12 @@ func (service *Service) getStakeHelper(tx *Tx, addrs ids.ShortSet) (uint64, []dj
 	var (
 		totalAmountStaked uint64
 		err               error
-		stakedOuts        = make([]djtx.TransferableOutput, 0, len(outs))
+		stakedOuts        = make([]avax.TransferableOutput, 0, len(outs))
 	)
 	// Go through all of the staked outputs
 	for _, stake := range outs {
-		// This output isn't DJTX. Ignore.
-		if stake.AssetID() != service.vm.ctx.DJTXAssetID {
+		// This output isn't AVAX. Ignore.
+		if stake.AssetID() != service.vm.ctx.AVAXAssetID {
 			continue
 		}
 		out := stake.Out
@@ -2241,11 +2241,11 @@ func (service *Service) getStakeHelper(tx *Tx, addrs ids.ShortSet) (uint64, []dj
 	return totalAmountStaked, stakedOuts, nil
 }
 
-// GetStake returns the amount of nDJTX that [args.Addresses] have cumulatively
+// GetStake returns the amount of nAVAX that [args.Addresses] have cumulatively
 // staked on the Primary Network.
 //
 // This method assumes that each stake output has only owner
-// This method assumes only DJTX can be staked
+// This method assumes only AVAX can be staked
 // This method only concerns itself with the Primary Network, not subnets
 // TODO: Improve the performance of this method by maintaining this data
 // in a data structure rather than re-calculating it by iterating over stakers
@@ -2270,7 +2270,7 @@ func (service *Service) GetStake(_ *http.Request, args *GetStakeArgs, response *
 
 	var (
 		totalStake uint64
-		stakedOuts = make([]djtx.TransferableOutput, 0, len(stakers))
+		stakedOuts = make([]avax.TransferableOutput, 0, len(stakers))
 	)
 	for _, tx := range stakers { // Iterates over current stakers
 		stakedAmt, outs, err := service.getStakeHelper(tx, addrs)
@@ -2318,11 +2318,11 @@ func (service *Service) GetStake(_ *http.Request, args *GetStakeArgs, response *
 type GetMinStakeReply struct {
 	//  The minimum amount of tokens one must bond to be a validator
 	MinValidatorStake json.Uint64 `json:"minValidatorStake"`
-	// Minimum stake, in nDJTX, that can be delegated on the primary network
+	// Minimum stake, in nAVAX, that can be delegated on the primary network
 	MinDelegatorStake json.Uint64 `json:"minDelegatorStake"`
 }
 
-// GetMinStake returns the minimum staking amount in nDJTX.
+// GetMinStake returns the minimum staking amount in nAVAX.
 func (service *Service) GetMinStake(_ *http.Request, _ *struct{}, reply *GetMinStakeReply) error {
 	reply.MinValidatorStake = json.Uint64(service.vm.MinValidatorStake)
 	reply.MinDelegatorStake = json.Uint64(service.vm.MinDelegatorStake)
@@ -2357,7 +2357,7 @@ type GetMaxStakeAmountReply struct {
 	Amount json.Uint64 `json:"amount"`
 }
 
-// GetMaxStakeAmount returns the maximum amount of nDJTX staking to the named
+// GetMaxStakeAmount returns the maximum amount of nAVAX staking to the named
 // node during the time period.
 func (service *Service) GetMaxStakeAmount(_ *http.Request, args *GetMaxStakeAmountArgs, reply *GetMaxStakeAmountReply) error {
 	nodeID, err := ids.ShortFromPrefixedString(args.NodeID, constants.NodeIDPrefix)

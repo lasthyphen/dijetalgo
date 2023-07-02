@@ -156,7 +156,7 @@ func (c *Client) GetPendingValidators(subnetID ids.ID, nodeIDs []ids.ShortID) ([
 	return res.Validators, res.Delegators, err
 }
 
-// GetCurrentSupply returns an upper bound on the supply of DJTX in the system
+// GetCurrentSupply returns an upper bound on the supply of AVAX in the system
 func (c *Client) GetCurrentSupply() (uint64, error) {
 	res := &GetCurrentSupplyReply{}
 	err := c.requester.SendRequest("getCurrentSupply", struct{}{}, res)
@@ -289,8 +289,8 @@ func (c *Client) CreateSubnet(
 	return res.TxID, err
 }
 
-// ExportDJTX issues an ExportTx transaction and returns the txID
-func (c *Client) ExportDJTX(
+// ExportAVAX issues an ExportTx transaction and returns the txID
+func (c *Client) ExportAVAX(
 	user api.UserPass,
 	from []string,
 	changeAddr string,
@@ -298,7 +298,7 @@ func (c *Client) ExportDJTX(
 	amount uint64,
 ) (ids.ID, error) {
 	res := &api.JSONTxID{}
-	err := c.requester.SendRequest("exportDJTX", &ExportDJTXArgs{
+	err := c.requester.SendRequest("exportAVAX", &ExportAVAXArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: from},
@@ -310,8 +310,8 @@ func (c *Client) ExportDJTX(
 	return res.TxID, err
 }
 
-// ImportDJTX issues an ImportTx transaction and returns the txID
-func (c *Client) ImportDJTX(
+// ImportAVAX issues an ImportTx transaction and returns the txID
+func (c *Client) ImportAVAX(
 	user api.UserPass,
 	from []string,
 	changeAddr,
@@ -319,7 +319,7 @@ func (c *Client) ImportDJTX(
 	sourceChain string,
 ) (ids.ID, error) {
 	res := &api.JSONTxID{}
-	err := c.requester.SendRequest("importDJTX", &ImportDJTXArgs{
+	err := c.requester.SendRequest("importAVAX", &ImportAVAXArgs{
 		JSONSpendHeader: api.JSONSpendHeader{
 			UserPass:       user,
 			JSONFromAddrs:  api.JSONFromAddrs{From: from},
@@ -437,7 +437,7 @@ func (c *Client) GetTxStatus(txID ids.ID, includeReason bool) (*GetTxStatusRespo
 	return res, err
 }
 
-// GetStake returns the amount of nDJTX that [addresses] have cumulatively
+// GetStake returns the amount of nAVAX that [addresses] have cumulatively
 // staked on the Primary Network.
 func (c *Client) GetStake(addrs []string) (*GetStakeReply, error) {
 	res := new(GetStakeReply)
@@ -447,7 +447,7 @@ func (c *Client) GetStake(addrs []string) (*GetStakeReply, error) {
 	return res, err
 }
 
-// GetMinStake returns the minimum staking amount in nDJTX for validators
+// GetMinStake returns the minimum staking amount in nAVAX for validators
 // and delegators respectively
 func (c *Client) GetMinStake() (uint64, uint64, error) {
 	res := new(GetMinStakeReply)
@@ -455,14 +455,14 @@ func (c *Client) GetMinStake() (uint64, uint64, error) {
 	return uint64(res.MinValidatorStake), uint64(res.MinDelegatorStake), err
 }
 
-// GetTotalStake returns the total amount (in nDJTX) staked on the network
+// GetTotalStake returns the total amount (in nAVAX) staked on the network
 func (c *Client) GetTotalStake() (uint64, error) {
 	res := new(GetTotalStakeReply)
 	err := c.requester.SendRequest("getTotalStake", struct{}{}, res)
 	return uint64(res.Stake), err
 }
 
-// GetMaxStakeAmount returns the maximum amount of nDJTX staking to the named
+// GetMaxStakeAmount returns the maximum amount of nAVAX staking to the named
 // node during the time period.
 func (c *Client) GetMaxStakeAmount(subnetID ids.ID, nodeID string, startTime, endTime uint64) (uint64, error) {
 	res := new(GetMaxStakeAmountReply)

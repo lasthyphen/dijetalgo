@@ -51,7 +51,7 @@ type Context struct {
 	NodeID    ids.ShortID
 
 	XChainID    ids.ID
-	DJTXAssetID ids.ID
+	AVAXAssetID ids.ID
 
 	Log                 logging.Logger
 	DecisionDispatcher  EventDispatcher

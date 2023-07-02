@@ -424,7 +424,7 @@ func (c *Client) Import(user api.UserPass, to, sourceChain string) (ids.ID, erro
 }
 
 // Export sends an asset from this chain to the P/C-Chain.
-// After this tx is accepted, the DJTX must be imported to the P/C-chain with an importTx.
+// After this tx is accepted, the AVAX must be imported to the P/C-chain with an importTx.
 // Returns the ID of the newly created atomic transaction
 func (c *Client) Export(
 	user api.UserPass,

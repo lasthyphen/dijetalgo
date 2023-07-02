@@ -551,7 +551,7 @@ func (n *Node) initVMManager() error {
 // Create the vmManager, chainManager and register the following VMs:
 // AVM, Simple Payments DAG, Simple Payments Chain, and Platform VM
 // Assumes n.DBManager, n.vdrs all initialized (non-nil)
-func (n *Node) initChainManager(djtxAssetID ids.ID) error {
+func (n *Node) initChainManager(avaxAssetID ids.ID) error {
 	createAVMTx, err := genesis.VMGenesis(n.Config.GenesisBytes, avm.ID)
 	if err != nil {
 		return err
@@ -632,7 +632,7 @@ func (n *Node) initChainManager(djtxAssetID ids.ID) error {
 		Server:                                 &n.APIServer,
 		Keystore:                               n.keystore,
 		AtomicMemory:                           &n.sharedMemory,
-		DJTXAssetID:                            djtxAssetID,
+		AVAXAssetID:                            avaxAssetID,
 		XChainID:                               xChainID,
 		CriticalChains:                         criticalChains,
 		TimeoutManager:                         timeoutManager,
@@ -1090,7 +1090,7 @@ func (n *Node) Initialize(
 	if err := n.initVMManager(); err != nil {
 		return fmt.Errorf("couldn't initialize API aliases: %w", err)
 	}
-	if err := n.initChainManager(n.Config.DjtxAssetID); err != nil { // Set up the chain manager
+	if err := n.initChainManager(n.Config.AvaxAssetID); err != nil { // Set up the chain manager
 		return fmt.Errorf("couldn't initialize chain manager: %w", err)
 	}
 	if err := n.initAdminAPI(); err != nil { // Start the Admin API

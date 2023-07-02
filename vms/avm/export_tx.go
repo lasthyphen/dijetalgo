@@ -12,7 +12,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/snow"
 	"github.com/lasthyphen/dijetalgo/utils/constants"
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 )
 
@@ -30,7 +30,7 @@ type ExportTx struct {
 	DestinationChain ids.ID `serialize:"true" json:"destinationChain"`
 
 	// The outputs this transaction is sending to the other chain
-	ExportedOuts []*djtx.TransferableOutput `serialize:"true" json:"exportedOutputs"`
+	ExportedOuts []*avax.TransferableOutput `serialize:"true" json:"exportedOutputs"`
 }
 
 func (t *ExportTx) Init(vm *VM) error {
@@ -65,11 +65,11 @@ func (t *ExportTx) SyntacticVerify(
 		return err
 	}
 
-	return djtx.VerifyTx(
+	return avax.VerifyTx(
 		txFee,
 		txFeeAssetID,
-		[][]*djtx.TransferableInput{t.Ins},
-		[][]*djtx.TransferableOutput{
+		[][]*avax.TransferableInput{t.Ins},
+		[][]*avax.TransferableOutput{
 			t.Outs,
 			t.ExportedOuts,
 		},
@@ -95,7 +95,7 @@ func (t *ExportTx) SemanticVerify(vm *VM, tx UnsignedTx, creds []verify.Verifiab
 			return err
 		}
 		assetID := out.AssetID()
-		if assetID != vm.ctx.DJTXAssetID && t.DestinationChain == constants.PlatformChainID {
+		if assetID != vm.ctx.AVAXAssetID && t.DestinationChain == constants.PlatformChainID {
 			return errWrongAssetID
 		}
 		if !vm.verifyFxUsage(fxIndex, assetID) {
@@ -112,12 +112,12 @@ func (t *ExportTx) ExecuteWithSideEffects(vm *VM, batch database.Batch) error {
 
 	elems := make([]*atomic.Element, len(t.ExportedOuts))
 	for i, out := range t.ExportedOuts {
-		utxo := &djtx.UTXO{
-			UTXOID: djtx.UTXOID{
+		utxo := &avax.UTXO{
+			UTXOID: avax.UTXOID{
 				TxID:        txID,
 				OutputIndex: uint32(len(t.Outs) + i),
 			},
-			Asset: djtx.Asset{ID: out.AssetID()},
+			Asset: avax.Asset{ID: out.AssetID()},
 			Out:   out.Out,
 		}
 
@@ -131,7 +131,7 @@ func (t *ExportTx) ExecuteWithSideEffects(vm *VM, batch database.Batch) error {
 			Key:   inputID[:],
 			Value: utxoBytes,
 		}
-		if out, ok := utxo.Out.(djtx.Addressable); ok {
+		if out, ok := utxo.Out.(avax.Addressable); ok {
 			elem.Traits = out.Addresses()
 		}
 

@@ -167,7 +167,7 @@ func (vm *VMClient) Initialize(
 		ChainID:              ctx.ChainID[:],
 		NodeID:               ctx.NodeID.Bytes(),
 		XChainID:             ctx.XChainID[:],
-		DjtxAssetID:          ctx.DJTXAssetID[:],
+		AvaxAssetID:          ctx.AVAXAssetID[:],
 		GenesisBytes:         genesisBytes,
 		UpgradeBytes:         upgradeBytes,
 		ConfigBytes:          configBytes,

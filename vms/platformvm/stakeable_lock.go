@@ -6,7 +6,7 @@ package platformvm
 import (
 	"errors"
 
-	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
+	"github.com/lasthyphen/dijetalgo/vms/components/avax"
 )
 
 var (
@@ -16,11 +16,11 @@ var (
 
 type StakeableLockOut struct {
 	Locktime             uint64 `serialize:"true" json:"locktime"`
-	djtx.TransferableOut `serialize:"true"`
+	avax.TransferableOut `serialize:"true"`
 }
 
 func (s *StakeableLockOut) Addresses() [][]byte {
-	if addressable, ok := s.TransferableOut.(djtx.Addressable); ok {
+	if addressable, ok := s.TransferableOut.(avax.Addressable); ok {
 		return addressable.Addresses()
 	}
 	return nil
@@ -38,7 +38,7 @@ func (s *StakeableLockOut) Verify() error {
 
 type StakeableLockIn struct {
 	Locktime            uint64 `serialize:"true" json:"locktime"`
-	djtx.TransferableIn `serialize:"true"`
+	avax.TransferableIn `serialize:"true"`
 }
 
 func (s *StakeableLockIn) Verify() error {

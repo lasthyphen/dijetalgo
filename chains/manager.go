@@ -144,7 +144,7 @@ type ManagerConfig struct {
 	Server                      *server.Server     // Handles HTTP API calls
 	Keystore                    keystore.Keystore
 	AtomicMemory                *atomic.Memory
-	DJTXAssetID                 ids.ID
+	AVAXAssetID                 ids.ID
 	XChainID                    ids.ID
 	CriticalChains              ids.Set          // Chains that can't exit gracefully
 	WhitelistedSubnets          ids.Set          // Subnets to validate
@@ -318,7 +318,7 @@ func (m *manager) buildChain(chainParams ChainParameters, sb Subnet) (*chain, er
 		ChainID:              chainParams.ID,
 		NodeID:               m.NodeID,
 		XChainID:             m.XChainID,
-		DJTXAssetID:          m.DJTXAssetID,
+		AVAXAssetID:          m.AVAXAssetID,
 		Log:                  chainLog,
 		DecisionDispatcher:   m.DecisionEvents,
 		ConsensusDispatcher:  m.ConsensusEvents,
