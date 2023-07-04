@@ -19,7 +19,7 @@ var (
 		"allocations": [
 			{
 				"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-				"djtxAddr": "X-local1g65uqn6t77p656w64023nh8nd9updzmxyymev2",
+				"avaxAddr": "X-local1g65uqn6t77p656w64023nh8nd9updzmxyymev2",
 				"initialAmount": 0,
 				"unlockSchedule": [
 					{
@@ -30,7 +30,7 @@ var (
 			},
 			{
 				"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-				"djtxAddr": "X-local18jma8ppw3nhx5r4ap8clazz0dps7rv5u00z96u",
+				"avaxAddr": "X-local18jma8ppw3nhx5r4ap8clazz0dps7rv5u00z96u",
 				"initialAmount": 300000000000000000,
 				"unlockSchedule": [
 					{
@@ -44,7 +44,7 @@ var (
 			},
 			{
 				"ethAddr": "0xb3d82b1367d362de99ab59a658165aff520cbd4d",
-				"djtxAddr": "X-local1ur873jhz9qnaqv5qthk5sn3e8nj3e0kmggalnu",
+				"avaxAddr": "X-local1ur873jhz9qnaqv5qthk5sn3e8nj3e0kmggalnu",
 				"initialAmount": 10000000000000000,
 				"unlockSchedule": [
 					{
@@ -54,7 +54,7 @@ var (
 				]
 			}
 		],
-		"startTime": 1630987200,
+		"startTime": 1660536000,
 		"initialStakeDuration": 31536000,
 		"initialStakeDurationOffset": 5400,
 		"initialStakedFunds": [
