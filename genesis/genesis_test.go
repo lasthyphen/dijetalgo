@@ -47,9 +47,9 @@ func TestValidateConfig(t *testing.T) {
 			networkID: 1,
 			config:    &MainnetConfig,
 		},
-		"tahoe": {
+		"fuji": {
 			networkID: 5,
-			config:    &TahoeConfig,
+			config:    &FujiConfig,
 		},
 		"local": {
 			networkID: 12345,
@@ -126,7 +126,7 @@ func TestValidateConfig(t *testing.T) {
 		"initial staked funds not in allocations": {
 			networkID: 5,
 			config: func() *Config {
-				thisConfig := TahoeConfig
+				thisConfig := FujiConfig
 				thisConfig.InitialStakedFunds = append(thisConfig.InitialStakedFunds, LocalConfig.InitialStakedFunds[0])
 				return &thisConfig
 			}(),
@@ -260,14 +260,14 @@ func TestGenesis(t *testing.T) {
 			networkID: constants.MainnetID,
 			expected:  "3e6662fdbd88bcf4c7dd82cb4699c0807f1d7315d493bc38532697e11b226276",
 		},
-		"tahoe": {
-			networkID: constants.TahoeID,
+		"fuji": {
+			networkID: constants.FujiID,
 			expected:  "2e6b699298a664793bff42dae9c1af8d9c54645d8b376fd331e0b67475578e0a",
 		},
-		"tahoe (with custom specified)": {
-			networkID:    constants.TahoeID,
+		"fuji (with custom specified)": {
+			networkID:    constants.FujiID,
 			customConfig: localGenesisConfigJSON, // won't load
-			err:          "cannot override genesis config for standard network tahoe (5)",
+			err:          "cannot override genesis config for standard network fuji (5)",
 		},
 		"local": {
 			networkID: constants.LocalID,
@@ -355,7 +355,7 @@ func TestVMGenesis(t *testing.T) {
 			},
 		},
 		{
-			networkID: constants.TahoeID,
+			networkID: constants.FujiID,
 			vmTest: []vmTest{
 				{
 					vmID:       avm.ID,
@@ -419,7 +419,7 @@ func TestDJTXAssetID(t *testing.T) {
 			expectedID: "FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z",
 		},
 		{
-			networkID:  constants.TahoeID,
+			networkID:  constants.FujiID,
 			expectedID: "U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK",
 		},
 		{
