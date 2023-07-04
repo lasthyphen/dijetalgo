@@ -30,6 +30,7 @@ require (
 	github.com/jackpal/go-nat-pmp v1.0.2
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0
 	github.com/kr/text v0.2.0 // indirect
+	github.com/lasthyphen/duluth v1.7.3 // indirect
 	github.com/linxGnu/grocksdb v1.6.34
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
