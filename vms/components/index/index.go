@@ -16,7 +16,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/utils/logging"
 	"github.com/lasthyphen/dijetalgo/utils/wrappers"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 )
 
 var (
@@ -40,8 +40,8 @@ type AddressTxsIndexer interface {
 	// If the error is non-nil, do not persist [txID] to disk as accepted in the VM
 	Accept(
 		txID ids.ID,
-		inputUTXOs []*avax.UTXO,
-		outputUTXOs []*avax.UTXO,
+		inputUTXOs []*djtx.UTXO,
+		outputUTXOs []*djtx.UTXO,
 	) error
 
 	// Read returns the IDs of transactions that changed [address]'s balance of [assetID].
@@ -92,7 +92,7 @@ func NewIndexer(
 // |  | "0"   => txID1
 // |  | "1"   => txID1
 // See interface documentation AddressTxsIndexer.Accept
-func (i *indexer) Accept(txID ids.ID, inputUTXOs []*avax.UTXO, outputUTXOs []*avax.UTXO) error {
+func (i *indexer) Accept(txID ids.ID, inputUTXOs []*djtx.UTXO, outputUTXOs []*djtx.UTXO) error {
 	utxos := inputUTXOs
 	// Fetch and add the output UTXOs
 	utxos = append(utxos, outputUTXOs...)
@@ -103,7 +103,7 @@ func (i *indexer) Accept(txID ids.ID, inputUTXOs []*avax.UTXO, outputUTXOs []*av
 	// we do this step separately to simplify the write process later
 	balanceChanges := make(map[string]map[ids.ID]struct{})
 	for _, utxo := range utxos {
-		out, ok := utxo.Out.(avax.Addressable)
+		out, ok := utxo.Out.(djtx.Addressable)
 		if !ok {
 			i.log.Verbo("skipping UTXO %s for indexing", utxo.InputID())
 			continue
@@ -240,7 +240,7 @@ func NewNoIndexer(db database.Database, allowIncomplete bool) (AddressTxsIndexer
 	return &noIndexer{}, checkIndexStatus(db, false, allowIncomplete)
 }
 
-func (i *noIndexer) Accept(ids.ID, []*avax.UTXO, []*avax.UTXO) error {
+func (i *noIndexer) Accept(ids.ID, []*djtx.UTXO, []*djtx.UTXO) error {
 	return nil
 }
 

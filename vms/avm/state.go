@@ -10,7 +10,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/codec"
 	"github.com/lasthyphen/dijetalgo/database"
 	"github.com/lasthyphen/dijetalgo/database/prefixdb"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 )
 
 const (
@@ -28,18 +28,18 @@ var (
 // State persistently maintains a set of UTXOs, transaction, statuses, and
 // singletons.
 type State interface {
-	avax.UTXOState
-	avax.StatusState
-	avax.SingletonState
+	djtx.UTXOState
+	djtx.StatusState
+	djtx.SingletonState
 	TxState
 
 	DeduplicateTx(tx *UniqueTx) *UniqueTx
 }
 
 type state struct {
-	avax.UTXOState
-	avax.StatusState
-	avax.SingletonState
+	djtx.UTXOState
+	djtx.StatusState
+	djtx.SingletonState
 	TxState
 
 	uniqueTxs cache.Deduplicator
@@ -52,9 +52,9 @@ func NewState(db database.Database, genesisCodec, codec codec.Manager) State {
 	txDB := prefixdb.New(txStatePrefix, db)
 
 	return &state{
-		UTXOState:      avax.NewUTXOState(utxoDB, codec),
-		StatusState:    avax.NewStatusState(statusDB),
-		SingletonState: avax.NewSingletonState(singletonDB),
+		UTXOState:      djtx.NewUTXOState(utxoDB, codec),
+		StatusState:    djtx.NewStatusState(statusDB),
+		SingletonState: djtx.NewSingletonState(singletonDB),
 		TxState:        NewTxState(txDB, genesisCodec),
 
 		uniqueTxs: &cache.EvictableLRU{
@@ -69,12 +69,12 @@ func NewMeteredState(db database.Database, genesisCodec, codec codec.Manager, na
 	singletonDB := prefixdb.New(singletonStatePrefix, db)
 	txDB := prefixdb.New(txStatePrefix, db)
 
-	utxoState, err := avax.NewMeteredUTXOState(utxoDB, codec, namespace, metrics)
+	utxoState, err := djtx.NewMeteredUTXOState(utxoDB, codec, namespace, metrics)
 	if err != nil {
 		return nil, err
 	}
 
-	statusState, err := avax.NewMeteredStatusState(statusDB, namespace, metrics)
+	statusState, err := djtx.NewMeteredStatusState(statusDB, namespace, metrics)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func NewMeteredState(db database.Database, genesisCodec, codec codec.Manager, na
 	return &state{
 		UTXOState:      utxoState,
 		StatusState:    statusState,
-		SingletonState: avax.NewSingletonState(singletonDB),
+		SingletonState: djtx.NewSingletonState(singletonDB),
 		TxState:        txState,
 
 		uniqueTxs: &cache.EvictableLRU{

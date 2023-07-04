@@ -6,7 +6,7 @@ package avm
 import (
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/snow"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 	"github.com/lasthyphen/dijetalgo/vms/nftfx"
 	"github.com/lasthyphen/dijetalgo/vms/propertyfx"
@@ -52,7 +52,7 @@ type Fx interface {
 type FxOperation interface {
 	verify.Verifiable
 	snow.ContextInitializable
-	avax.Coster
+	djtx.Coster
 
 	Outs() []verify.State
 }

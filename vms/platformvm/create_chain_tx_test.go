@@ -12,7 +12,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/utils/hashing"
 	"github.com/lasthyphen/dijetalgo/utils/units"
 	"github.com/lasthyphen/dijetalgo/vms/avm"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 	"github.com/stretchr/testify/assert"
 )
@@ -327,7 +327,7 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 		{
 			name:         "post-fork - incorrectly priced",
 			time:         ap3Time,
-			fee:          100*defaultTxFee - 1*units.NanoAvax,
+			fee:          100*defaultTxFee - 1*units.NanoDjtx,
 			expectsError: true,
 		},
 		{
@@ -362,7 +362,7 @@ func TestCreateChainTxAP3FeeChange(t *testing.T) {
 			// Create the tx
 
 			utx := &UnsignedCreateChainTx{
-				BaseTx: BaseTx{BaseTx: avax.BaseTx{
+				BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 					NetworkID:    vm.ctx.NetworkID,
 					BlockchainID: vm.ctx.ChainID,
 					Ins:          ins,

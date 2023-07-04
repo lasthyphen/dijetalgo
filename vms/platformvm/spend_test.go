@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/lasthyphen/dijetalgo/ids"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
@@ -43,9 +43,9 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 	// Adjust input/output locktimes accordingly.
 	tests := []struct {
 		description string
-		utxos       []*avax.UTXO
-		ins         []*avax.TransferableInput
-		outs        []*avax.TransferableOutput
+		utxos       []*djtx.UTXO
+		ins         []*djtx.TransferableInput
+		outs        []*djtx.TransferableOutput
 		creds       []verify.Verifiable
 		fee         uint64
 		assetID     ids.ID
@@ -53,141 +53,141 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 	}{
 		{
 			description: "no inputs, no outputs, no fee",
-			utxos:       []*avax.UTXO{},
-			ins:         []*avax.TransferableInput{},
-			outs:        []*avax.TransferableOutput{},
+			utxos:       []*djtx.UTXO{},
+			ins:         []*djtx.TransferableInput{},
+			outs:        []*djtx.TransferableOutput{},
 			creds:       []verify.Verifiable{},
 			fee:         0,
-			assetID:     vm.ctx.AVAXAssetID,
+			assetID:     vm.ctx.DJTXAssetID,
 			shouldErr:   false,
 		},
 		{
 			description: "no inputs, no outputs, positive fee",
-			utxos:       []*avax.UTXO{},
-			ins:         []*avax.TransferableInput{},
-			outs:        []*avax.TransferableOutput{},
+			utxos:       []*djtx.UTXO{},
+			ins:         []*djtx.TransferableInput{},
+			outs:        []*djtx.TransferableOutput{},
 			creds:       []verify.Verifiable{},
 			fee:         1,
-			assetID:     vm.ctx.AVAXAssetID,
+			assetID:     vm.ctx.DJTXAssetID,
 			shouldErr:   true,
 		},
 		{
 			description: "no inputs, no outputs, positive fee",
-			utxos:       []*avax.UTXO{},
-			ins:         []*avax.TransferableInput{},
-			outs:        []*avax.TransferableOutput{},
+			utxos:       []*djtx.UTXO{},
+			ins:         []*djtx.TransferableInput{},
+			outs:        []*djtx.TransferableOutput{},
 			creds:       []verify.Verifiable{},
 			fee:         1,
-			assetID:     vm.ctx.AVAXAssetID,
+			assetID:     vm.ctx.DJTXAssetID,
 			shouldErr:   true,
 		},
 		{
 			description: "one input, no outputs, positive fee",
-			utxos: []*avax.UTXO{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			utxos: []*djtx.UTXO{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: 1,
 				},
 			}},
-			ins: []*avax.TransferableInput{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			ins: []*djtx.TransferableInput{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				In: &secp256k1fx.TransferInput{
 					Amt: 1,
 				},
 			}},
-			outs: []*avax.TransferableOutput{},
+			outs: []*djtx.TransferableOutput{},
 			creds: []verify.Verifiable{
 				&secp256k1fx.Credential{},
 			},
 			fee:       1,
-			assetID:   vm.ctx.AVAXAssetID,
+			assetID:   vm.ctx.DJTXAssetID,
 			shouldErr: false,
 		},
 		{
 			description: "wrong number of credentials",
-			utxos: []*avax.UTXO{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			utxos: []*djtx.UTXO{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: 1,
 				},
 			}},
-			ins: []*avax.TransferableInput{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			ins: []*djtx.TransferableInput{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				In: &secp256k1fx.TransferInput{
 					Amt: 1,
 				},
 			}},
-			outs:      []*avax.TransferableOutput{},
+			outs:      []*djtx.TransferableOutput{},
 			creds:     []verify.Verifiable{},
 			fee:       1,
-			assetID:   vm.ctx.AVAXAssetID,
+			assetID:   vm.ctx.DJTXAssetID,
 			shouldErr: true,
 		},
 		{
 			description: "wrong number of UTXOs",
-			utxos:       []*avax.UTXO{},
-			ins: []*avax.TransferableInput{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			utxos:       []*djtx.UTXO{},
+			ins: []*djtx.TransferableInput{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				In: &secp256k1fx.TransferInput{
 					Amt: 1,
 				},
 			}},
-			outs: []*avax.TransferableOutput{},
+			outs: []*djtx.TransferableOutput{},
 			creds: []verify.Verifiable{
 				&secp256k1fx.Credential{},
 			},
 			fee:       1,
-			assetID:   vm.ctx.AVAXAssetID,
+			assetID:   vm.ctx.DJTXAssetID,
 			shouldErr: true,
 		},
 		{
 			description: "invalid credential",
-			utxos: []*avax.UTXO{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			utxos: []*djtx.UTXO{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: 1,
 				},
 			}},
-			ins: []*avax.TransferableInput{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			ins: []*djtx.TransferableInput{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				In: &secp256k1fx.TransferInput{
 					Amt: 1,
 				},
 			}},
-			outs: []*avax.TransferableOutput{},
+			outs: []*djtx.TransferableOutput{},
 			creds: []verify.Verifiable{
 				(*secp256k1fx.Credential)(nil),
 			},
 			fee:       1,
-			assetID:   vm.ctx.AVAXAssetID,
+			assetID:   vm.ctx.DJTXAssetID,
 			shouldErr: true,
 		},
 		{
 			description: "one input, no outputs, positive fee",
-			utxos: []*avax.UTXO{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			utxos: []*djtx.UTXO{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: 1,
 				},
 			}},
-			ins: []*avax.TransferableInput{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			ins: []*djtx.TransferableInput{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				In: &secp256k1fx.TransferInput{
 					Amt: 1,
 				},
 			}},
-			outs: []*avax.TransferableOutput{},
+			outs: []*djtx.TransferableOutput{},
 			creds: []verify.Verifiable{
 				&secp256k1fx.Credential{},
 			},
 			fee:       1,
-			assetID:   vm.ctx.AVAXAssetID,
+			assetID:   vm.ctx.DJTXAssetID,
 			shouldErr: false,
 		},
 		{
 			description: "locked one input, no outputs, no fee",
-			utxos: []*avax.UTXO{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			utxos: []*djtx.UTXO{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				Out: &StakeableLockOut{
 					Locktime: uint64(now.Unix()) + 1,
 					TransferableOut: &secp256k1fx.TransferOutput{
@@ -195,8 +195,8 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 					},
 				},
 			}},
-			ins: []*avax.TransferableInput{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			ins: []*djtx.TransferableInput{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				In: &StakeableLockIn{
 					Locktime: uint64(now.Unix()) + 1,
 					TransferableIn: &secp256k1fx.TransferInput{
@@ -204,18 +204,18 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 					},
 				},
 			}},
-			outs: []*avax.TransferableOutput{},
+			outs: []*djtx.TransferableOutput{},
 			creds: []verify.Verifiable{
 				&secp256k1fx.Credential{},
 			},
 			fee:       0,
-			assetID:   vm.ctx.AVAXAssetID,
+			assetID:   vm.ctx.DJTXAssetID,
 			shouldErr: false,
 		},
 		{
 			description: "locked one input, no outputs, positive fee",
-			utxos: []*avax.UTXO{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			utxos: []*djtx.UTXO{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				Out: &StakeableLockOut{
 					Locktime: uint64(now.Unix()) + 1,
 					TransferableOut: &secp256k1fx.TransferOutput{
@@ -223,8 +223,8 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 					},
 				},
 			}},
-			ins: []*avax.TransferableInput{{
-				Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			ins: []*djtx.TransferableInput{{
+				Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 				In: &StakeableLockIn{
 					Locktime: uint64(now.Unix()) + 1,
 					TransferableIn: &secp256k1fx.TransferInput{
@@ -232,19 +232,19 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 					},
 				},
 			}},
-			outs: []*avax.TransferableOutput{},
+			outs: []*djtx.TransferableOutput{},
 			creds: []verify.Verifiable{
 				&secp256k1fx.Credential{},
 			},
 			fee:       1,
-			assetID:   vm.ctx.AVAXAssetID,
+			assetID:   vm.ctx.DJTXAssetID,
 			shouldErr: true,
 		},
 		{
 			description: "one locked one unlock input, one locked output, positive fee",
-			utxos: []*avax.UTXO{
+			utxos: []*djtx.UTXO{
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					Out: &StakeableLockOut{
 						Locktime: uint64(now.Unix()) + 1,
 						TransferableOut: &secp256k1fx.TransferOutput{
@@ -253,15 +253,15 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 					},
 				},
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					Out: &secp256k1fx.TransferOutput{
 						Amt: 1,
 					},
 				},
 			},
-			ins: []*avax.TransferableInput{
+			ins: []*djtx.TransferableInput{
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					In: &StakeableLockIn{
 						Locktime: uint64(now.Unix()) + 1,
 						TransferableIn: &secp256k1fx.TransferInput{
@@ -270,15 +270,15 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 					},
 				},
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					In: &secp256k1fx.TransferInput{
 						Amt: 1,
 					},
 				},
 			},
-			outs: []*avax.TransferableOutput{
+			outs: []*djtx.TransferableOutput{
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					Out: &StakeableLockOut{
 						Locktime: uint64(now.Unix()) + 1,
 						TransferableOut: &secp256k1fx.TransferOutput{
@@ -292,14 +292,14 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 				&secp256k1fx.Credential{},
 			},
 			fee:       1,
-			assetID:   vm.ctx.AVAXAssetID,
+			assetID:   vm.ctx.DJTXAssetID,
 			shouldErr: false,
 		},
 		{
 			description: "one locked one unlock input, one locked output, positive fee, partially locked",
-			utxos: []*avax.UTXO{
+			utxos: []*djtx.UTXO{
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					Out: &StakeableLockOut{
 						Locktime: uint64(now.Unix()) + 1,
 						TransferableOut: &secp256k1fx.TransferOutput{
@@ -308,15 +308,15 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 					},
 				},
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					Out: &secp256k1fx.TransferOutput{
 						Amt: 2,
 					},
 				},
 			},
-			ins: []*avax.TransferableInput{
+			ins: []*djtx.TransferableInput{
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					In: &StakeableLockIn{
 						Locktime: uint64(now.Unix()) + 1,
 						TransferableIn: &secp256k1fx.TransferInput{
@@ -325,15 +325,15 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 					},
 				},
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					In: &secp256k1fx.TransferInput{
 						Amt: 2,
 					},
 				},
 			},
-			outs: []*avax.TransferableOutput{
+			outs: []*djtx.TransferableOutput{
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					Out: &StakeableLockOut{
 						Locktime: uint64(now.Unix()) + 1,
 						TransferableOut: &secp256k1fx.TransferOutput{
@@ -347,14 +347,14 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 				&secp256k1fx.Credential{},
 			},
 			fee:       1,
-			assetID:   vm.ctx.AVAXAssetID,
+			assetID:   vm.ctx.DJTXAssetID,
 			shouldErr: false,
 		},
 		{
 			description: "one unlock input, one locked output, zero fee, unlocked",
-			utxos: []*avax.UTXO{
+			utxos: []*djtx.UTXO{
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					Out: &StakeableLockOut{
 						Locktime: uint64(now.Unix()) - 1,
 						TransferableOut: &secp256k1fx.TransferOutput{
@@ -363,17 +363,17 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 					},
 				},
 			},
-			ins: []*avax.TransferableInput{
+			ins: []*djtx.TransferableInput{
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					In: &secp256k1fx.TransferInput{
 						Amt: 1,
 					},
 				},
 			},
-			outs: []*avax.TransferableOutput{
+			outs: []*djtx.TransferableOutput{
 				{
-					Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+					Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 					Out: &secp256k1fx.TransferOutput{
 						Amt: 1,
 					},
@@ -383,7 +383,7 @@ func TestSemanticVerifySpendUTXOs(t *testing.T) {
 				&secp256k1fx.Credential{},
 			},
 			fee:       0,
-			assetID:   vm.ctx.AVAXAssetID,
+			assetID:   vm.ctx.DJTXAssetID,
 			shouldErr: false,
 		},
 	}

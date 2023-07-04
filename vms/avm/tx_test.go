@@ -12,7 +12,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/utils/units"
 	"github.com/lasthyphen/dijetalgo/utils/wrappers"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
 
@@ -68,22 +68,22 @@ func TestTxEmpty(t *testing.T) {
 func TestTxInvalidCredential(t *testing.T) {
 	ctx := NewContext(t)
 	c, m := setupCodec()
-	if err := c.RegisterType(&avax.TestVerifiable{}); err != nil {
+	if err := c.RegisterType(&djtx.TestVerifiable{}); err != nil {
 		t.Fatal(err)
 	}
 
 	tx := &Tx{
-		UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
+		UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    networkID,
 			BlockchainID: chainID,
-			Ins: []*avax.TransferableInput{{
-				UTXOID: avax.UTXOID{
+			Ins: []*djtx.TransferableInput{{
+				UTXOID: djtx.UTXOID{
 					TxID:        ids.Empty,
 					OutputIndex: 0,
 				},
-				Asset: avax.Asset{ID: assetID},
+				Asset: djtx.Asset{ID: assetID},
 				In: &secp256k1fx.TransferInput{
-					Amt: 20 * units.KiloAvax,
+					Amt: 20 * units.KiloDjtx,
 					Input: secp256k1fx.Input{
 						SigIndices: []uint32{
 							0,
@@ -92,7 +92,7 @@ func TestTxInvalidCredential(t *testing.T) {
 				},
 			}},
 		}},
-		Creds: []*FxCredential{{Verifiable: &avax.TestVerifiable{Err: errors.New("")}}},
+		Creds: []*FxCredential{{Verifiable: &djtx.TestVerifiable{Err: errors.New("")}}},
 	}
 	if err := tx.SignSECP256K1Fx(m, nil); err != nil {
 		t.Fatal(err)
@@ -106,23 +106,23 @@ func TestTxInvalidCredential(t *testing.T) {
 func TestTxInvalidUnsignedTx(t *testing.T) {
 	ctx := NewContext(t)
 	c, m := setupCodec()
-	if err := c.RegisterType(&avax.TestVerifiable{}); err != nil {
+	if err := c.RegisterType(&djtx.TestVerifiable{}); err != nil {
 		t.Fatal(err)
 	}
 
 	tx := &Tx{
-		UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
+		UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    networkID,
 			BlockchainID: chainID,
-			Ins: []*avax.TransferableInput{
+			Ins: []*djtx.TransferableInput{
 				{
-					UTXOID: avax.UTXOID{
+					UTXOID: djtx.UTXOID{
 						TxID:        ids.Empty,
 						OutputIndex: 0,
 					},
-					Asset: avax.Asset{ID: assetID},
+					Asset: djtx.Asset{ID: assetID},
 					In: &secp256k1fx.TransferInput{
-						Amt: 20 * units.KiloAvax,
+						Amt: 20 * units.KiloDjtx,
 						Input: secp256k1fx.Input{
 							SigIndices: []uint32{
 								0,
@@ -131,13 +131,13 @@ func TestTxInvalidUnsignedTx(t *testing.T) {
 					},
 				},
 				{
-					UTXOID: avax.UTXOID{
+					UTXOID: djtx.UTXOID{
 						TxID:        ids.Empty,
 						OutputIndex: 0,
 					},
-					Asset: avax.Asset{ID: assetID},
+					Asset: djtx.Asset{ID: assetID},
 					In: &secp256k1fx.TransferInput{
-						Amt: 20 * units.KiloAvax,
+						Amt: 20 * units.KiloDjtx,
 						Input: secp256k1fx.Input{
 							SigIndices: []uint32{
 								0,
@@ -148,8 +148,8 @@ func TestTxInvalidUnsignedTx(t *testing.T) {
 			},
 		}},
 		Creds: []*FxCredential{
-			{Verifiable: &avax.TestVerifiable{}},
-			{Verifiable: &avax.TestVerifiable{}},
+			{Verifiable: &djtx.TestVerifiable{}},
+			{Verifiable: &djtx.TestVerifiable{}},
 		},
 	}
 	if err := tx.SignSECP256K1Fx(m, nil); err != nil {
@@ -164,20 +164,20 @@ func TestTxInvalidUnsignedTx(t *testing.T) {
 func TestTxInvalidNumberOfCredentials(t *testing.T) {
 	ctx := NewContext(t)
 	c, m := setupCodec()
-	if err := c.RegisterType(&avax.TestVerifiable{}); err != nil {
+	if err := c.RegisterType(&djtx.TestVerifiable{}); err != nil {
 		t.Fatal(err)
 	}
 
 	tx := &Tx{
-		UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
+		UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    networkID,
 			BlockchainID: chainID,
-			Ins: []*avax.TransferableInput{
+			Ins: []*djtx.TransferableInput{
 				{
-					UTXOID: avax.UTXOID{TxID: ids.Empty, OutputIndex: 0},
-					Asset:  avax.Asset{ID: assetID},
+					UTXOID: djtx.UTXOID{TxID: ids.Empty, OutputIndex: 0},
+					Asset:  djtx.Asset{ID: assetID},
 					In: &secp256k1fx.TransferInput{
-						Amt: 20 * units.KiloAvax,
+						Amt: 20 * units.KiloDjtx,
 						Input: secp256k1fx.Input{
 							SigIndices: []uint32{
 								0,
@@ -186,10 +186,10 @@ func TestTxInvalidNumberOfCredentials(t *testing.T) {
 					},
 				},
 				{
-					UTXOID: avax.UTXOID{TxID: ids.Empty, OutputIndex: 1},
-					Asset:  avax.Asset{ID: assetID},
+					UTXOID: djtx.UTXOID{TxID: ids.Empty, OutputIndex: 1},
+					Asset:  djtx.Asset{ID: assetID},
 					In: &secp256k1fx.TransferInput{
-						Amt: 20 * units.KiloAvax,
+						Amt: 20 * units.KiloDjtx,
 						Input: secp256k1fx.Input{
 							SigIndices: []uint32{
 								0,
@@ -199,7 +199,7 @@ func TestTxInvalidNumberOfCredentials(t *testing.T) {
 				},
 			},
 		}},
-		Creds: []*FxCredential{{Verifiable: &avax.TestVerifiable{}}},
+		Creds: []*FxCredential{{Verifiable: &djtx.TestVerifiable{}}},
 	}
 	if err := tx.SignSECP256K1Fx(m, nil); err != nil {
 		t.Fatal(err)

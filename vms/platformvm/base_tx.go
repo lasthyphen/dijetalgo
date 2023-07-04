@@ -8,14 +8,14 @@ import (
 
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/snow"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
 
 // BaseTx contains fields common to many transaction types. It should be
 // embedded in transaction implementations.
 type BaseTx struct {
-	avax.BaseTx `serialize:"true" json:"inputs"`
+	djtx.BaseTx `serialize:"true" json:"inputs"`
 
 	// true iff this transaction has already passed syntactic verification
 	syntacticallyVerified bool
@@ -64,9 +64,9 @@ func (tx *BaseTx) SyntacticVerify(ctx *snow.Context) error {
 		}
 	}
 	switch {
-	case !avax.IsSortedTransferableOutputs(tx.Outs, Codec):
+	case !djtx.IsSortedTransferableOutputs(tx.Outs, Codec):
 		return errOutputsNotSorted
-	case !avax.IsSortedAndUniqueTransferableInputs(tx.Ins):
+	case !djtx.IsSortedAndUniqueTransferableInputs(tx.Ins):
 		return errInputsNotSortedUnique
 	default:
 		return nil

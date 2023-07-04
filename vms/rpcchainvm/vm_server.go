@@ -82,7 +82,7 @@ func (vm *VMServer) Initialize(_ context.Context, req *vmproto.InitializeRequest
 	if err != nil {
 		return nil, err
 	}
-	avaxAssetID, err := ids.ToID(req.AvaxAssetID)
+	djtxAssetID, err := ids.ToID(req.DjtxAssetID)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +201,7 @@ func (vm *VMServer) Initialize(_ context.Context, req *vmproto.InitializeRequest
 		ChainID:              chainID,
 		NodeID:               nodeID,
 		XChainID:             xChainID,
-		AVAXAssetID:          avaxAssetID,
+		DJTXAssetID:          djtxAssetID,
 		Log:                  logging.NoLog{},
 		DecisionDispatcher:   nil,
 		ConsensusDispatcher:  nil,

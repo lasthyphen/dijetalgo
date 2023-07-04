@@ -23,7 +23,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/utils/units"
 	"github.com/lasthyphen/dijetalgo/utils/wrappers"
 	"github.com/lasthyphen/dijetalgo/version"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 	"github.com/lasthyphen/dijetalgo/vms/nftfx"
 	"github.com/lasthyphen/dijetalgo/vms/propertyfx"
@@ -77,12 +77,12 @@ func (sn *snLookup) SubnetID(chainID ids.ID) (ids.ID, error) {
 
 func NewContext(tb testing.TB) *snow.Context {
 	genesisBytes := BuildGenesisTest(tb)
-	tx := GetAVAXTxFromGenesisTest(genesisBytes, tb)
+	tx := GetDJTXTxFromGenesisTest(genesisBytes, tb)
 
 	ctx := snow.DefaultContextTest()
 	ctx.NetworkID = networkID
 	ctx.ChainID = chainID
-	ctx.AVAXAssetID = tx.ID()
+	ctx.DJTXAssetID = tx.ID()
 	ctx.XChainID = ids.Empty.Prefix(0)
 	aliaser := ctx.BCLookup.(ids.Aliaser)
 
@@ -141,8 +141,8 @@ func GetCreateTxFromGenesisTest(tb testing.TB, genesisBytes []byte, assetName st
 	return &tx
 }
 
-func GetAVAXTxFromGenesisTest(genesisBytes []byte, tb testing.TB) *Tx {
-	return GetCreateTxFromGenesisTest(tb, genesisBytes, "AVAX")
+func GetDJTXTxFromGenesisTest(genesisBytes []byte, tb testing.TB) *Tx {
+	return GetCreateTxFromGenesisTest(tb, genesisBytes, "DJTX")
 }
 
 // BuildGenesisTest is the common Genesis builder for most tests
@@ -155,7 +155,7 @@ func BuildGenesisTest(tb testing.TB) []byte {
 		Encoding: formatting.Hex,
 		GenesisData: map[string]AssetDefinition{
 			"asset1": {
-				Name:   "AVAX",
+				Name:   "DJTX",
 				Symbol: "SYMB",
 				InitialState: map[string][]interface{}{
 					"fixedCap": {
@@ -319,21 +319,21 @@ func GenesisVMWithArgs(tb testing.TB, additionalFxs []*common.Fx, args *BuildGen
 }
 
 func NewTx(t *testing.T, genesisBytes []byte, vm *VM) *Tx {
-	return NewTxWithAsset(t, genesisBytes, vm, "AVAX")
+	return NewTxWithAsset(t, genesisBytes, vm, "DJTX")
 }
 
 func NewTxWithAsset(t *testing.T, genesisBytes []byte, vm *VM, assetName string) *Tx {
 	createTx := GetCreateTxFromGenesisTest(t, genesisBytes, assetName)
 
-	newTx := &Tx{UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
+	newTx := &Tx{UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
 		NetworkID:    networkID,
 		BlockchainID: chainID,
-		Ins: []*avax.TransferableInput{{
-			UTXOID: avax.UTXOID{
+		Ins: []*djtx.TransferableInput{{
+			UTXOID: djtx.UTXOID{
 				TxID:        createTx.ID(),
 				OutputIndex: 2,
 			},
-			Asset: avax.Asset{ID: createTx.ID()},
+			Asset: djtx.Asset{ID: createTx.ID()},
 			In: &secp256k1fx.TransferInput{
 				Amt: startBalance,
 				Input: secp256k1fx.Input{
@@ -354,17 +354,17 @@ func setupIssueTx(t testing.TB) (chan common.Message, *VM, *snow.Context, []*Tx)
 	genesisBytes, issuer, vm, _ := GenesisVM(t)
 	ctx := vm.ctx
 
-	avaxTx := GetAVAXTxFromGenesisTest(genesisBytes, t)
+	djtxTx := GetDJTXTxFromGenesisTest(genesisBytes, t)
 	key := keys[0]
-	firstTx := &Tx{UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
+	firstTx := &Tx{UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
 		NetworkID:    networkID,
 		BlockchainID: chainID,
-		Ins: []*avax.TransferableInput{{
-			UTXOID: avax.UTXOID{
-				TxID:        avaxTx.ID(),
+		Ins: []*djtx.TransferableInput{{
+			UTXOID: djtx.UTXOID{
+				TxID:        djtxTx.ID(),
 				OutputIndex: 2,
 			},
-			Asset: avax.Asset{ID: avaxTx.ID()},
+			Asset: djtx.Asset{ID: djtxTx.ID()},
 			In: &secp256k1fx.TransferInput{
 				Amt: startBalance,
 				Input: secp256k1fx.Input{
@@ -374,8 +374,8 @@ func setupIssueTx(t testing.TB) (chan common.Message, *VM, *snow.Context, []*Tx)
 				},
 			},
 		}},
-		Outs: []*avax.TransferableOutput{{
-			Asset: avax.Asset{ID: avaxTx.ID()},
+		Outs: []*djtx.TransferableOutput{{
+			Asset: djtx.Asset{ID: djtxTx.ID()},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: startBalance - vm.TxFee,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -389,15 +389,15 @@ func setupIssueTx(t testing.TB) (chan common.Message, *VM, *snow.Context, []*Tx)
 		t.Fatal(err)
 	}
 
-	secondTx := &Tx{UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
+	secondTx := &Tx{UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
 		NetworkID:    networkID,
 		BlockchainID: chainID,
-		Ins: []*avax.TransferableInput{{
-			UTXOID: avax.UTXOID{
-				TxID:        avaxTx.ID(),
+		Ins: []*djtx.TransferableInput{{
+			UTXOID: djtx.UTXOID{
+				TxID:        djtxTx.ID(),
 				OutputIndex: 2,
 			},
-			Asset: avax.Asset{ID: avaxTx.ID()},
+			Asset: djtx.Asset{ID: djtxTx.ID()},
 			In: &secp256k1fx.TransferInput{
 				Amt: startBalance,
 				Input: secp256k1fx.Input{
@@ -407,8 +407,8 @@ func setupIssueTx(t testing.TB) (chan common.Message, *VM, *snow.Context, []*Tx)
 				},
 			},
 		}},
-		Outs: []*avax.TransferableOutput{{
-			Asset: avax.Asset{ID: avaxTx.ID()},
+		Outs: []*djtx.TransferableOutput{{
+			Asset: djtx.Asset{ID: djtxTx.ID()},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: 1,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -421,7 +421,7 @@ func setupIssueTx(t testing.TB) (chan common.Message, *VM, *snow.Context, []*Tx)
 	if err := secondTx.SignSECP256K1Fx(vm.codec, [][]*crypto.PrivateKeySECP256K1R{{key}}); err != nil {
 		t.Fatal(err)
 	}
-	return issuer, vm, ctx, []*Tx{avaxTx, firstTx, secondTx}
+	return issuer, vm, ctx, []*Tx{djtxTx, firstTx, secondTx}
 }
 
 func TestTxSerialization(t *testing.T) {
@@ -542,7 +542,7 @@ func TestTxSerialization(t *testing.T) {
 	}
 
 	unsignedTx := &CreateAssetTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    networkID,
 			BlockchainID: chainID,
 			Memo:         []byte{0x00, 0x01, 0x02, 0x03},
@@ -568,10 +568,10 @@ func TestTxSerialization(t *testing.T) {
 	for _, key := range keys {
 		addr := key.PublicKey().Address()
 
-		unsignedTx.Outs = append(unsignedTx.Outs, &avax.TransferableOutput{
-			Asset: avax.Asset{ID: assetID},
+		unsignedTx.Outs = append(unsignedTx.Outs, &djtx.TransferableOutput{
+			Asset: djtx.Asset{ID: assetID},
 			Out: &secp256k1fx.TransferOutput{
-				Amt: 20 * units.KiloAvax,
+				Amt: 20 * units.KiloDjtx,
 				OutputOwners: secp256k1fx.OutputOwners{
 					Threshold: 1,
 					Addrs:     []ids.ShortID{addr},
@@ -782,7 +782,7 @@ func TestGenesisGetPaginatedUTXOs(t *testing.T) {
 		Encoding: formatting.Hex,
 		GenesisData: map[string]AssetDefinition{
 			"asset1": {
-				Name:         "AVAX",
+				Name:         "DJTX",
 				Symbol:       "SYMB",
 				InitialState: holder,
 			},
@@ -801,14 +801,14 @@ func TestGenesisGetPaginatedUTXOs(t *testing.T) {
 	addrsSet.Add(addrs[0], addrs[1])
 
 	var (
-		fetchedUTXOs []*avax.UTXO
+		fetchedUTXOs []*djtx.UTXO
 		err          error
 	)
 
 	lastAddr := ids.ShortEmpty
 	lastIdx := ids.Empty
 
-	var totalUTXOs []*avax.UTXO
+	var totalUTXOs []*djtx.UTXO
 	for i := 0; i <= 3; i++ {
 		fetchedUTXOs, lastAddr, lastIdx, err = vm.getPaginatedUTXOs(addrsSet, lastAddr, lastIdx, 0)
 		if err != nil {
@@ -919,7 +919,7 @@ func TestIssueNFT(t *testing.T) {
 	}
 
 	createAssetTx := &Tx{UnsignedTx: &CreateAssetTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    networkID,
 			BlockchainID: chainID,
 		}},
@@ -955,13 +955,13 @@ func TestIssueNFT(t *testing.T) {
 	}
 
 	mintNFTTx := &Tx{UnsignedTx: &OperationTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    networkID,
 			BlockchainID: chainID,
 		}},
 		Ops: []*Operation{{
-			Asset: avax.Asset{ID: createAssetTx.ID()},
-			UTXOIDs: []*avax.UTXOID{{
+			Asset: djtx.Asset{ID: createAssetTx.ID()},
+			UTXOIDs: []*djtx.UTXOID{{
 				TxID:        createAssetTx.ID(),
 				OutputIndex: 0,
 			}},
@@ -985,13 +985,13 @@ func TestIssueNFT(t *testing.T) {
 
 	transferNFTTx := &Tx{
 		UnsignedTx: &OperationTx{
-			BaseTx: BaseTx{BaseTx: avax.BaseTx{
+			BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 				NetworkID:    networkID,
 				BlockchainID: chainID,
 			}},
 			Ops: []*Operation{{
-				Asset: avax.Asset{ID: createAssetTx.ID()},
-				UTXOIDs: []*avax.UTXOID{{
+				Asset: djtx.Asset{ID: createAssetTx.ID()},
+				UTXOIDs: []*djtx.UTXOID{{
 					TxID:        mintNFTTx.ID(),
 					OutputIndex: 0,
 				}},
@@ -1071,7 +1071,7 @@ func TestIssueProperty(t *testing.T) {
 	}
 
 	createAssetTx := &Tx{UnsignedTx: &CreateAssetTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    networkID,
 			BlockchainID: chainID,
 		}},
@@ -1099,13 +1099,13 @@ func TestIssueProperty(t *testing.T) {
 	}
 
 	mintPropertyTx := &Tx{UnsignedTx: &OperationTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    networkID,
 			BlockchainID: chainID,
 		}},
 		Ops: []*Operation{{
-			Asset: avax.Asset{ID: createAssetTx.ID()},
-			UTXOIDs: []*avax.UTXOID{{
+			Asset: djtx.Asset{ID: createAssetTx.ID()},
+			UTXOIDs: []*djtx.UTXOID{{
 				TxID:        createAssetTx.ID(),
 				OutputIndex: 0,
 			}},
@@ -1158,13 +1158,13 @@ func TestIssueProperty(t *testing.T) {
 	}
 
 	burnPropertyTx := &Tx{UnsignedTx: &OperationTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    networkID,
 			BlockchainID: chainID,
 		}},
 		Ops: []*Operation{{
-			Asset: avax.Asset{ID: createAssetTx.ID()},
-			UTXOIDs: []*avax.UTXOID{{
+			Asset: djtx.Asset{ID: createAssetTx.ID()},
+			UTXOIDs: []*djtx.UTXOID{{
 				TxID:        mintPropertyTx.ID(),
 				OutputIndex: 1,
 			}},
@@ -1284,17 +1284,17 @@ func TestIssueTxWithAnotherAsset(t *testing.T) {
 	feeAssetCreateTx := GetCreateTxFromGenesisTest(t, genesisBytes, feeAssetName)
 	createTx := GetCreateTxFromGenesisTest(t, genesisBytes, otherAssetName)
 
-	newTx := &Tx{UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
+	newTx := &Tx{UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
 		NetworkID:    networkID,
 		BlockchainID: chainID,
-		Ins: []*avax.TransferableInput{
+		Ins: []*djtx.TransferableInput{
 			// fee asset
 			{
-				UTXOID: avax.UTXOID{
+				UTXOID: djtx.UTXOID{
 					TxID:        feeAssetCreateTx.ID(),
 					OutputIndex: 2,
 				},
-				Asset: avax.Asset{ID: feeAssetCreateTx.ID()},
+				Asset: djtx.Asset{ID: feeAssetCreateTx.ID()},
 				In: &secp256k1fx.TransferInput{
 					Amt: startBalance,
 					Input: secp256k1fx.Input{
@@ -1306,11 +1306,11 @@ func TestIssueTxWithAnotherAsset(t *testing.T) {
 			},
 			// issued asset
 			{
-				UTXOID: avax.UTXOID{
+				UTXOID: djtx.UTXOID{
 					TxID:        createTx.ID(),
 					OutputIndex: 2,
 				},
-				Asset: avax.Asset{ID: createTx.ID()},
+				Asset: djtx.Asset{ID: createTx.ID()},
 				In: &secp256k1fx.TransferInput{
 					Amt: startBalance,
 					Input: secp256k1fx.Input{
@@ -1423,7 +1423,7 @@ func TestTxNotCached(t *testing.T) {
 
 	s := vm.state.(*state)
 	s.TxState = NewTxState(prefixdb.New(txStatePrefix, db), vm.genesisCodec)
-	s.StatusState = avax.NewStatusState(prefixdb.New(statusStatePrefix, db))
+	s.StatusState = djtx.NewStatusState(prefixdb.New(statusStatePrefix, db))
 	s.uniqueTxs.Flush()
 
 	_, err = vm.ParseTx(txBytes)
@@ -1514,19 +1514,19 @@ func TestTxVerifyAfterVerifyAncestorTx(t *testing.T) {
 		}
 		ctx.Lock.Unlock()
 	}()
-	avaxTx := issueTxs[0]
+	djtxTx := issueTxs[0]
 	firstTx := issueTxs[1]
 	secondTx := issueTxs[2]
 	key := keys[0]
-	firstTxDescendant := &Tx{UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
+	firstTxDescendant := &Tx{UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
 		NetworkID:    networkID,
 		BlockchainID: chainID,
-		Ins: []*avax.TransferableInput{{
-			UTXOID: avax.UTXOID{
+		Ins: []*djtx.TransferableInput{{
+			UTXOID: djtx.UTXOID{
 				TxID:        firstTx.ID(),
 				OutputIndex: 0,
 			},
-			Asset: avax.Asset{ID: avaxTx.ID()},
+			Asset: djtx.Asset{ID: djtxTx.ID()},
 			In: &secp256k1fx.TransferInput{
 				Amt: startBalance - vm.TxFee,
 				Input: secp256k1fx.Input{
@@ -1536,8 +1536,8 @@ func TestTxVerifyAfterVerifyAncestorTx(t *testing.T) {
 				},
 			},
 		}},
-		Outs: []*avax.TransferableOutput{{
-			Asset: avax.Asset{ID: avaxTx.ID()},
+		Outs: []*djtx.TransferableOutput{{
+			Asset: djtx.Asset{ID: djtxTx.ID()},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: startBalance - 2*vm.TxFee,
 				OutputOwners: secp256k1fx.OutputOwners{

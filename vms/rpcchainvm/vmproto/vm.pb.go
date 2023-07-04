@@ -31,7 +31,7 @@ type InitializeRequest struct {
 	ChainID              []byte               `protobuf:"bytes,3,opt,name=chainID,proto3" json:"chainID,omitempty"`
 	NodeID               []byte               `protobuf:"bytes,4,opt,name=nodeID,proto3" json:"nodeID,omitempty"`
 	XChainID             []byte               `protobuf:"bytes,5,opt,name=xChainID,proto3" json:"xChainID,omitempty"`
-	AvaxAssetID          []byte               `protobuf:"bytes,6,opt,name=avaxAssetID,proto3" json:"avaxAssetID,omitempty"`
+	DjtxAssetID          []byte               `protobuf:"bytes,6,opt,name=djtxAssetID,proto3" json:"djtxAssetID,omitempty"`
 	GenesisBytes         []byte               `protobuf:"bytes,7,opt,name=genesisBytes,proto3" json:"genesisBytes,omitempty"`
 	UpgradeBytes         []byte               `protobuf:"bytes,8,opt,name=upgradeBytes,proto3" json:"upgradeBytes,omitempty"`
 	ConfigBytes          []byte               `protobuf:"bytes,9,opt,name=configBytes,proto3" json:"configBytes,omitempty"`
@@ -113,9 +113,9 @@ func (x *InitializeRequest) GetXChainID() []byte {
 	return nil
 }
 
-func (x *InitializeRequest) GetAvaxAssetID() []byte {
+func (x *InitializeRequest) GetDjtxAssetID() []byte {
 	if x != nil {
-		return x.AvaxAssetID
+		return x.DjtxAssetID
 	}
 	return nil
 }

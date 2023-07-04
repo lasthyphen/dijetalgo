@@ -76,12 +76,12 @@ func (m *metrics) Initialize(
 	m.localStake = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Name:      "local_staked",
-		Help:      "Total amount of AVAX on this node staked",
+		Help:      "Total amount of DJTX on this node staked",
 	})
 	m.totalStake = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Name:      "total_staked",
-		Help:      "Total amount of AVAX staked",
+		Help:      "Total amount of DJTX staked",
 	})
 
 	m.numAbortBlocks = newBlockMetrics(namespace, "abort")

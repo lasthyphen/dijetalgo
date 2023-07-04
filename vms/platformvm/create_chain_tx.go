@@ -15,7 +15,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/utils/constants"
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
 	"github.com/lasthyphen/dijetalgo/utils/units"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 )
 
@@ -124,7 +124,7 @@ func (tx *UnsignedCreateChainTx) Execute(
 	// Verify the flowcheck
 	timestamp := vs.GetTimestamp()
 	createBlockchainTxFee := vm.getCreateBlockchainTxFee(timestamp)
-	if err := vm.semanticVerifySpend(vs, tx, tx.Ins, tx.Outs, baseTxCreds, createBlockchainTxFee, vm.ctx.AVAXAssetID); err != nil {
+	if err := vm.semanticVerifySpend(vs, tx, tx.Ins, tx.Outs, baseTxCreds, createBlockchainTxFee, vm.ctx.DJTXAssetID); err != nil {
 		return nil, err
 	}
 
@@ -154,7 +154,7 @@ func (tx *UnsignedCreateChainTx) Execute(
 	consumeInputs(vs, tx.Ins)
 	// Produce the UTXOS
 	txID := tx.ID()
-	produceOutputs(vs, txID, vm.ctx.AVAXAssetID, tx.Outs)
+	produceOutputs(vs, txID, vm.ctx.DJTXAssetID, tx.Outs)
 	// Attempt to the new chain to the database
 	vs.AddChain(stx)
 
@@ -192,7 +192,7 @@ func (vm *VM) newCreateChainTx(
 
 	// Create the tx
 	utx := &UnsignedCreateChainTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 			Ins:          ins,

@@ -12,7 +12,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/utils"
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 )
 
@@ -23,8 +23,8 @@ var (
 )
 
 type Operation struct {
-	avax.Asset `serialize:"true"`
-	UTXOIDs    []*avax.UTXOID `serialize:"true" json:"inputIDs"`
+	djtx.Asset `serialize:"true"`
+	UTXOIDs    []*djtx.UTXOID `serialize:"true" json:"inputIDs"`
 	FxID       ids.ID         `serialize:"false" json:"fxID"`
 	Op         FxOperation    `serialize:"true" json:"operation"`
 }
@@ -36,7 +36,7 @@ func (op *Operation) Verify(c codec.Manager) error {
 		return errNilOperation
 	case op.Op == nil:
 		return errNilFxOperation
-	case !avax.IsSortedAndUniqueUTXOIDs(op.UTXOIDs):
+	case !djtx.IsSortedAndUniqueUTXOIDs(op.UTXOIDs):
 		return errNotSortedAndUniqueUTXOIDs
 	default:
 		return verify.All(&op.Asset, op.Op)

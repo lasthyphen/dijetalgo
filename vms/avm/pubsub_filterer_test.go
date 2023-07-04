@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/lasthyphen/dijetalgo/pubsub"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 	"github.com/stretchr/testify/assert"
 
@@ -27,8 +27,8 @@ func TestFilter(t *testing.T) {
 	assert := assert.New(t)
 
 	addrID := ids.ShortID{1}
-	tx := Tx{UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
-		Outs: []*avax.TransferableOutput{
+	tx := Tx{UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
+		Outs: []*djtx.TransferableOutput{
 			{
 				Out: &secp256k1fx.TransferOutput{
 					OutputOwners: secp256k1fx.OutputOwners{

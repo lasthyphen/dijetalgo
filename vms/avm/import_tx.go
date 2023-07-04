@@ -11,7 +11,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/database"
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/snow"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 )
 
@@ -29,7 +29,7 @@ type ImportTx struct {
 	SourceChain ids.ID `serialize:"true" json:"sourceChain"`
 
 	// The inputs to this transaction
-	ImportedIns []*avax.TransferableInput `serialize:"true" json:"importedInputs"`
+	ImportedIns []*djtx.TransferableInput `serialize:"true" json:"importedInputs"`
 }
 
 func (t *ImportTx) Init(vm *VM) error {
@@ -44,7 +44,7 @@ func (t *ImportTx) Init(vm *VM) error {
 }
 
 // InputUTXOs track which UTXOs this transaction is consuming.
-func (t *ImportTx) InputUTXOs() []*avax.UTXOID {
+func (t *ImportTx) InputUTXOs() []*djtx.UTXOID {
 	utxos := t.BaseTx.InputUTXOs()
 	for _, in := range t.ImportedIns {
 		in.Symbol = true
@@ -94,14 +94,14 @@ func (t *ImportTx) SyntacticVerify(
 		return err
 	}
 
-	return avax.VerifyTx(
+	return djtx.VerifyTx(
 		txFee,
 		txFeeAssetID,
-		[][]*avax.TransferableInput{
+		[][]*djtx.TransferableInput{
 			t.Ins,
 			t.ImportedIns,
 		},
-		[][]*avax.TransferableOutput{t.Outs},
+		[][]*djtx.TransferableOutput{t.Outs},
 		c,
 	)
 }
@@ -136,7 +136,7 @@ func (t *ImportTx) SemanticVerify(vm *VM, tx UnsignedTx, creds []verify.Verifiab
 
 	offset := t.BaseTx.NumCredentials()
 	for i, in := range t.ImportedIns {
-		utxo := avax.UTXO{}
+		utxo := djtx.UTXO{}
 		if _, err := vm.codec.Unmarshal(allUTXOBytes[i], &utxo); err != nil {
 			return err
 		}

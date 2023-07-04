@@ -13,7 +13,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/snow"
 	"github.com/lasthyphen/dijetalgo/utils/constants"
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 
@@ -41,7 +41,7 @@ type UnsignedAddValidatorTx struct {
 	// Describes the delegatee
 	Validator Validator `serialize:"true" json:"validator"`
 	// Where to send staked tokens when done validating
-	Stake []*avax.TransferableOutput `serialize:"true" json:"stake"`
+	Stake []*djtx.TransferableOutput `serialize:"true" json:"stake"`
 	// Where to send staking rewards when done validating
 	RewardsOwner Owner `serialize:"true" json:"rewardsOwner"`
 	// Fee this validator charges delegators as a percentage, times 10,000
@@ -107,7 +107,7 @@ func (tx *UnsignedAddValidatorTx) SyntacticVerify(ctx *snow.Context) error {
 	}
 
 	switch {
-	case !avax.IsSortedTransferableOutputs(tx.Stake, Codec):
+	case !djtx.IsSortedTransferableOutputs(tx.Stake, Codec):
 		return errOutputsNotSorted
 	case totalStakeWeight != tx.Validator.Wght:
 		return fmt.Errorf("validator weight %d is not equal to total stake weight %d", tx.Validator.Wght, totalStakeWeight)
@@ -166,7 +166,7 @@ func (tx *UnsignedAddValidatorTx) Execute(
 	currentStakers := parentState.CurrentStakerChainState()
 	pendingStakers := parentState.PendingStakerChainState()
 
-	outs := make([]*avax.TransferableOutput, len(tx.Outs)+len(tx.Stake))
+	outs := make([]*djtx.TransferableOutput, len(tx.Outs)+len(tx.Stake))
 	copy(outs, tx.Outs)
 	copy(outs[len(tx.Outs):], tx.Stake)
 
@@ -225,7 +225,7 @@ func (tx *UnsignedAddValidatorTx) Execute(
 		}
 
 		// Verify the flowcheck
-		if err := vm.semanticVerifySpend(parentState, tx, tx.Ins, outs, stx.Creds, vm.AddStakerTxFee, vm.ctx.AVAXAssetID); err != nil {
+		if err := vm.semanticVerifySpend(parentState, tx, tx.Ins, outs, stx.Creds, vm.AddStakerTxFee, vm.ctx.DJTXAssetID); err != nil {
 			switch err.(type) {
 			case permError:
 				return nil, nil, nil, nil, permError{
@@ -255,14 +255,14 @@ func (tx *UnsignedAddValidatorTx) Execute(
 	consumeInputs(onCommitState, tx.Ins)
 	// Produce the UTXOS
 	txID := tx.ID()
-	produceOutputs(onCommitState, txID, vm.ctx.AVAXAssetID, tx.Outs)
+	produceOutputs(onCommitState, txID, vm.ctx.DJTXAssetID, tx.Outs)
 
 	// Set up the state if this tx is aborted
 	onAbortState := newVersionedState(parentState, currentStakers, pendingStakers)
 	// Consume the UTXOS
 	consumeInputs(onAbortState, tx.Ins)
 	// Produce the UTXOS
-	produceOutputs(onAbortState, txID, vm.ctx.AVAXAssetID, outs)
+	produceOutputs(onAbortState, txID, vm.ctx.DJTXAssetID, outs)
 
 	return onCommitState, onAbortState, nil, nil, nil
 }
@@ -290,7 +290,7 @@ func (vm *VM) newAddValidatorTx(
 	}
 	// Create the tx
 	utx := &UnsignedAddValidatorTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 			Ins:          ins,

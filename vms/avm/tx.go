@@ -12,7 +12,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/snow"
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
 	"github.com/lasthyphen/dijetalgo/utils/hashing"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 	"github.com/lasthyphen/dijetalgo/vms/nftfx"
 	"github.com/lasthyphen/dijetalgo/vms/propertyfx"
@@ -30,8 +30,8 @@ type UnsignedTx interface {
 	AssetIDs() ids.Set
 
 	NumCredentials() int
-	InputUTXOs() []*avax.UTXOID
-	UTXOs() []*avax.UTXO
+	InputUTXOs() []*djtx.UTXOID
+	UTXOs() []*djtx.UTXO
 
 	SyntacticVerify(
 		ctx *snow.Context,

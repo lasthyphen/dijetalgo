@@ -10,7 +10,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/database"
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/snow"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 )
 
@@ -22,7 +22,7 @@ var (
 
 // BaseTx is the basis of all transactions.
 type BaseTx struct {
-	avax.BaseTx `serialize:"true"`
+	djtx.BaseTx `serialize:"true"`
 }
 
 // Init sets the FxID fields in the inputs and outputs of this [BaseTx]
@@ -64,11 +64,11 @@ func (t *BaseTx) SyntacticVerify(
 		return err
 	}
 
-	return avax.VerifyTx(
+	return djtx.VerifyTx(
 		txFee,
 		txFeeAssetID,
-		[][]*avax.TransferableInput{t.Ins},
-		[][]*avax.TransferableOutput{t.Outs},
+		[][]*djtx.TransferableInput{t.Ins},
+		[][]*djtx.TransferableOutput{t.Outs},
 		c,
 	)
 }

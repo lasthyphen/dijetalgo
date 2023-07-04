@@ -41,7 +41,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/utils/units"
 	"github.com/lasthyphen/dijetalgo/utils/wrappers"
 	"github.com/lasthyphen/dijetalgo/version"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 
 	smcon "github.com/lasthyphen/dijetalgo/snow/consensus/snowman"
@@ -52,8 +52,8 @@ var (
 	defaultMinStakingDuration = 24 * time.Hour
 	defaultMaxStakingDuration = 365 * 24 * time.Hour
 
-	// AVAX asset ID in tests
-	avaxAssetID = ids.ID{'y', 'e', 'e', 't'}
+	// DJTX asset ID in tests
+	djtxAssetID = ids.ID{'y', 'e', 'e', 't'}
 
 	defaultTxFee = uint64(100)
 
@@ -66,12 +66,12 @@ var (
 	// time that genesis validators stop validating
 	defaultValidateEndTime = defaultValidateStartTime.Add(10 * defaultMinStakingDuration)
 
-	// each key controls an address that has [defaultBalance] AVAX at genesis
+	// each key controls an address that has [defaultBalance] DJTX at genesis
 	keys []*crypto.PrivateKeySECP256K1R
 
-	defaultMinValidatorStake = 5 * units.MilliAvax
-	defaultMaxValidatorStake = 500 * units.MilliAvax
-	defaultMinDelegatorStake = 1 * units.MilliAvax
+	defaultMinValidatorStake = 5 * units.MilliDjtx
+	defaultMaxValidatorStake = 500 * units.MilliDjtx
+	defaultMinDelegatorStake = 1 * units.MilliDjtx
 
 	// amount all genesis validators have in defaultVM
 	defaultBalance = 100 * defaultMinValidatorStake
@@ -118,7 +118,7 @@ func defaultContext() *snow.Context {
 	ctx := snow.DefaultContextTest()
 	ctx.NetworkID = testNetworkID
 	ctx.XChainID = avmID
-	ctx.AVAXAssetID = avaxAssetID
+	ctx.DJTXAssetID = djtxAssetID
 	aliaser := ids.NewAliaser()
 
 	errs := wrappers.Errs{}
@@ -181,12 +181,12 @@ func defaultGenesis() (*BuildGenesisArgs, []byte) {
 	buildGenesisArgs := BuildGenesisArgs{
 		Encoding:      formatting.Hex,
 		NetworkID:     json.Uint32(testNetworkID),
-		AvaxAssetID:   avaxAssetID,
+		DjtxAssetID:   djtxAssetID,
 		UTXOs:         genesisUTXOs,
 		Validators:    genesisValidators,
 		Chains:        nil,
 		Time:          json.Uint64(defaultGenesisTime.Unix()),
-		InitialSupply: json.Uint64(360 * units.MegaAvax),
+		InitialSupply: json.Uint64(360 * units.MegaDjtx),
 	}
 
 	buildGenesisResponse := BuildGenesisReply{}
@@ -255,12 +255,12 @@ func BuildGenesisTestWithArgs(t *testing.T, args *BuildGenesisArgs) (*BuildGenes
 
 	buildGenesisArgs := BuildGenesisArgs{
 		NetworkID:     json.Uint32(testNetworkID),
-		AvaxAssetID:   avaxAssetID,
+		DjtxAssetID:   djtxAssetID,
 		UTXOs:         genesisUTXOs,
 		Validators:    genesisValidators,
 		Chains:        nil,
 		Time:          json.Uint64(defaultGenesisTime.Unix()),
-		InitialSupply: json.Uint64(360 * units.MegaAvax),
+		InitialSupply: json.Uint64(360 * units.MegaDjtx),
 		Encoding:      formatting.CB58,
 	}
 
@@ -541,12 +541,12 @@ func TestGenesisGetUTXOs(t *testing.T) {
 	// Inject them in the Genesis build
 	buildGenesisArgs := BuildGenesisArgs{
 		NetworkID:     json.Uint32(testNetworkID),
-		AvaxAssetID:   avaxAssetID,
+		DjtxAssetID:   djtxAssetID,
 		UTXOs:         genesisUTXOs,
 		Validators:    []APIPrimaryValidator{},
 		Chains:        nil,
 		Time:          json.Uint64(defaultGenesisTime.Unix()),
-		InitialSupply: json.Uint64(360 * units.MegaAvax),
+		InitialSupply: json.Uint64(360 * units.MegaDjtx),
 		Encoding:      formatting.Hex,
 	}
 
@@ -556,14 +556,14 @@ func TestGenesisGetUTXOs(t *testing.T) {
 	addrsSet.Add(addr0, addr1)
 
 	var (
-		fetchedUTXOs []*avax.UTXO
+		fetchedUTXOs []*djtx.UTXO
 		err          error
 	)
 
 	lastAddr := ids.ShortEmpty
 	lastIdx := ids.Empty
 
-	var totalUTXOs []*avax.UTXO
+	var totalUTXOs []*djtx.UTXO
 	for i := 0; i <= 3; i++ {
 		fetchedUTXOs, lastAddr, lastIdx, err = vm.getPaginatedUTXOs(addrsSet, lastAddr, lastIdx, -1)
 		if err != nil {
@@ -1606,7 +1606,7 @@ func TestAtomicImport(t *testing.T) {
 		vm.ctx.Lock.Unlock()
 	}()
 
-	utxoID := avax.UTXOID{
+	utxoID := djtx.UTXOID{
 		TxID:        ids.Empty.Prefix(1),
 		OutputIndex: 1,
 	}
@@ -1619,7 +1619,7 @@ func TestAtomicImport(t *testing.T) {
 		t.Fatal(err)
 	}
 	vm.ctx.SharedMemory = m.NewSharedMemory(vm.ctx.ChainID)
-	vm.AtomicUTXOManager = avax.NewAtomicUTXOManager(vm.ctx.SharedMemory, Codec)
+	vm.AtomicUTXOManager = djtx.NewAtomicUTXOManager(vm.ctx.SharedMemory, Codec)
 	peerSharedMemory := m.NewSharedMemory(vm.ctx.XChainID)
 
 	if _, err := vm.newImportTx(
@@ -1633,9 +1633,9 @@ func TestAtomicImport(t *testing.T) {
 
 	// Provide the avm UTXO
 
-	utxo := &avax.UTXO{
+	utxo := &djtx.UTXO{
 		UTXOID: utxoID,
-		Asset:  avax.Asset{ID: avaxAssetID},
+		Asset:  djtx.Asset{ID: djtxAssetID},
 		Out: &secp256k1fx.TransferOutput{
 			Amt: amount,
 			OutputOwners: secp256k1fx.OutputOwners{
@@ -1700,17 +1700,17 @@ func TestOptimisticAtomicImport(t *testing.T) {
 	}()
 
 	tx := Tx{UnsignedTx: &UnsignedImportTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    vm.ctx.NetworkID,
 			BlockchainID: vm.ctx.ChainID,
 		}},
 		SourceChain: vm.ctx.XChainID,
-		ImportedInputs: []*avax.TransferableInput{{
-			UTXOID: avax.UTXOID{
+		ImportedInputs: []*djtx.TransferableInput{{
+			UTXOID: djtx.UTXOID{
 				TxID:        ids.Empty.Prefix(1),
 				OutputIndex: 1,
 			},
-			Asset: avax.Asset{ID: vm.ctx.AVAXAssetID},
+			Asset: djtx.Asset{ID: vm.ctx.DJTXAssetID},
 			In: &secp256k1fx.TransferInput{
 				Amt: 50000,
 			},

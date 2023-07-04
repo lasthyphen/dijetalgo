@@ -17,7 +17,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
 	"github.com/lasthyphen/dijetalgo/utils/formatting"
 	"github.com/lasthyphen/dijetalgo/utils/json"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/components/verify"
 	"github.com/lasthyphen/dijetalgo/vms/nftfx"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
@@ -88,7 +88,7 @@ type GetAddressTxsArgs struct {
 	Cursor json.Uint64 `json:"cursor"`
 	// PageSize num of items per page
 	PageSize json.Uint64 `json:"pageSize"`
-	// AssetID defaulted to AVAX if omitted or left blank
+	// AssetID defaulted to DJTX if omitted or left blank
 	AssetID string `json:"assetID"`
 }
 
@@ -231,7 +231,7 @@ func (service *Service) GetUTXOs(r *http.Request, args *api.GetUTXOsArgs, reply 
 	}
 
 	var (
-		utxos     []*avax.UTXO
+		utxos     []*djtx.UTXO
 		endAddr   ids.ShortID
 		endUTXOID ids.ID
 		err       error
@@ -332,7 +332,7 @@ type GetBalanceArgs struct {
 // GetBalanceReply defines the GetBalance replies returned from the API
 type GetBalanceReply struct {
 	Balance json.Uint64   `json:"balance"`
-	UTXOIDs []avax.UTXOID `json:"utxoIDs"`
+	UTXOIDs []djtx.UTXOID `json:"utxoIDs"`
 }
 
 // GetBalance returns the balance of an asset held by an address.
@@ -362,7 +362,7 @@ func (service *Service) GetBalance(r *http.Request, args *GetBalanceArgs, reply 
 	}
 
 	now := service.vm.clock.Unix()
-	reply.UTXOIDs = make([]avax.UTXOID, 0, len(utxos))
+	reply.UTXOIDs = make([]djtx.UTXOID, 0, len(utxos))
 	for _, utxo := range utxos {
 		if utxo.AssetID() != assetID {
 			continue
@@ -544,10 +544,10 @@ func (service *Service) CreateAsset(r *http.Request, args *CreateAssetArgs, repl
 		return err
 	}
 
-	outs := []*avax.TransferableOutput{}
+	outs := []*djtx.TransferableOutput{}
 	if amountSpent := amountsSpent[service.vm.feeAssetID]; amountSpent > service.vm.CreateAssetTxFee {
-		outs = append(outs, &avax.TransferableOutput{
-			Asset: avax.Asset{ID: service.vm.feeAssetID},
+		outs = append(outs, &djtx.TransferableOutput{
+			Asset: djtx.Asset{ID: service.vm.feeAssetID},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: amountSpent - service.vm.CreateAssetTxFee,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -596,7 +596,7 @@ func (service *Service) CreateAsset(r *http.Request, args *CreateAssetArgs, repl
 	initialState.Sort(service.vm.codec)
 
 	tx := Tx{UnsignedTx: &CreateAssetTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    service.vm.ctx.NetworkID,
 			BlockchainID: service.vm.ctx.ChainID,
 			Outs:         outs,
@@ -699,10 +699,10 @@ func (service *Service) CreateNFTAsset(r *http.Request, args *CreateNFTAssetArgs
 		return err
 	}
 
-	outs := []*avax.TransferableOutput{}
+	outs := []*djtx.TransferableOutput{}
 	if amountSpent := amountsSpent[service.vm.feeAssetID]; amountSpent > service.vm.CreateAssetTxFee {
-		outs = append(outs, &avax.TransferableOutput{
-			Asset: avax.Asset{ID: service.vm.feeAssetID},
+		outs = append(outs, &djtx.TransferableOutput{
+			Asset: djtx.Asset{ID: service.vm.feeAssetID},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: amountSpent - service.vm.CreateAssetTxFee,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -738,7 +738,7 @@ func (service *Service) CreateNFTAsset(r *http.Request, args *CreateNFTAssetArgs
 	initialState.Sort(service.vm.codec)
 
 	tx := Tx{UnsignedTx: &CreateAssetTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    service.vm.ctx.NetworkID,
 			BlockchainID: service.vm.ctx.ChainID,
 			Outs:         outs,
@@ -998,8 +998,8 @@ func (service *Service) SendMultiple(r *http.Request, args *SendMultipleArgs, re
 
 	// Validate the memo field
 	memoBytes := []byte(args.Memo)
-	if l := len(memoBytes); l > avax.MaxMemoSize {
-		return fmt.Errorf("max memo length is %d but provided memo field is length %d", avax.MaxMemoSize, l)
+	if l := len(memoBytes); l > djtx.MaxMemoSize {
+		return fmt.Errorf("max memo length is %d but provided memo field is length %d", djtx.MaxMemoSize, l)
 	} else if len(args.Outputs) == 0 {
 		return errNoOutputs
 	}
@@ -1035,7 +1035,7 @@ func (service *Service) SendMultiple(r *http.Request, args *SendMultipleArgs, re
 	// Asset ID --> amount of that asset being sent
 	amounts := make(map[ids.ID]uint64)
 	// Outputs of our tx
-	outs := []*avax.TransferableOutput{}
+	outs := []*djtx.TransferableOutput{}
 	for _, output := range args.Outputs {
 		if output.Amount == 0 {
 			return errZeroAmount
@@ -1062,8 +1062,8 @@ func (service *Service) SendMultiple(r *http.Request, args *SendMultipleArgs, re
 		}
 
 		// Create the Output
-		outs = append(outs, &avax.TransferableOutput{
-			Asset: avax.Asset{ID: assetID},
+		outs = append(outs, &djtx.TransferableOutput{
+			Asset: djtx.Asset{ID: assetID},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: uint64(output.Amount),
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -1100,8 +1100,8 @@ func (service *Service) SendMultiple(r *http.Request, args *SendMultipleArgs, re
 		amountSpent := amountsSpent[assetID]
 
 		if amountSpent > amountWithFee {
-			outs = append(outs, &avax.TransferableOutput{
-				Asset: avax.Asset{ID: assetID},
+			outs = append(outs, &djtx.TransferableOutput{
+				Asset: djtx.Asset{ID: assetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: amountSpent - amountWithFee,
 					OutputOwners: secp256k1fx.OutputOwners{
@@ -1113,9 +1113,9 @@ func (service *Service) SendMultiple(r *http.Request, args *SendMultipleArgs, re
 			})
 		}
 	}
-	avax.SortTransferableOutputs(outs, service.vm.codec)
+	djtx.SortTransferableOutputs(outs, service.vm.codec)
 
-	tx := Tx{UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
+	tx := Tx{UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
 		NetworkID:    service.vm.ctx.NetworkID,
 		BlockchainID: service.vm.ctx.ChainID,
 		Outs:         outs,
@@ -1198,10 +1198,10 @@ func (service *Service) Mint(r *http.Request, args *MintArgs, reply *api.JSONTxI
 		return err
 	}
 
-	outs := []*avax.TransferableOutput{}
+	outs := []*djtx.TransferableOutput{}
 	if amountSpent := amountsSpent[service.vm.feeAssetID]; amountSpent > service.vm.TxFee {
-		outs = append(outs, &avax.TransferableOutput{
-			Asset: avax.Asset{ID: service.vm.feeAssetID},
+		outs = append(outs, &djtx.TransferableOutput{
+			Asset: djtx.Asset{ID: service.vm.feeAssetID},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: amountSpent - service.vm.TxFee,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -1233,7 +1233,7 @@ func (service *Service) Mint(r *http.Request, args *MintArgs, reply *api.JSONTxI
 	keys = append(keys, opKeys...)
 
 	tx := Tx{UnsignedTx: &OperationTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    service.vm.ctx.NetworkID,
 			BlockchainID: service.vm.ctx.ChainID,
 			Outs:         outs,
@@ -1315,10 +1315,10 @@ func (service *Service) SendNFT(r *http.Request, args *SendNFTArgs, reply *api.J
 		return err
 	}
 
-	outs := []*avax.TransferableOutput{}
+	outs := []*djtx.TransferableOutput{}
 	if amountSpent := amountsSpent[service.vm.feeAssetID]; amountSpent > service.vm.TxFee {
-		outs = append(outs, &avax.TransferableOutput{
-			Asset: avax.Asset{ID: service.vm.feeAssetID},
+		outs = append(outs, &djtx.TransferableOutput{
+			Asset: djtx.Asset{ID: service.vm.feeAssetID},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: amountSpent - service.vm.TxFee,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -1342,7 +1342,7 @@ func (service *Service) SendNFT(r *http.Request, args *SendNFTArgs, reply *api.J
 	}
 
 	tx := Tx{UnsignedTx: &OperationTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    service.vm.ctx.NetworkID,
 			BlockchainID: service.vm.ctx.ChainID,
 			Outs:         outs,
@@ -1431,10 +1431,10 @@ func (service *Service) MintNFT(r *http.Request, args *MintNFTArgs, reply *api.J
 		return err
 	}
 
-	outs := []*avax.TransferableOutput{}
+	outs := []*djtx.TransferableOutput{}
 	if amountSpent := amountsSpent[service.vm.feeAssetID]; amountSpent > service.vm.TxFee {
-		outs = append(outs, &avax.TransferableOutput{
-			Asset: avax.Asset{ID: service.vm.feeAssetID},
+		outs = append(outs, &djtx.TransferableOutput{
+			Asset: djtx.Asset{ID: service.vm.feeAssetID},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: amountSpent - service.vm.TxFee,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -1464,7 +1464,7 @@ func (service *Service) MintNFT(r *http.Request, args *MintNFTArgs, reply *api.J
 	}
 
 	tx := Tx{UnsignedTx: &OperationTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    service.vm.ctx.NetworkID,
 			BlockchainID: service.vm.ctx.ChainID,
 			Outs:         outs,
@@ -1497,12 +1497,12 @@ type ImportArgs struct {
 	// Chain the funds are coming from
 	SourceChain string `json:"sourceChain"`
 
-	// Address receiving the imported AVAX
+	// Address receiving the imported DJTX
 	To string `json:"to"`
 }
 
 // Import imports an asset to this chain from the P/C-Chain.
-// The AVAX must have already been exported from the P/C-Chain.
+// The DJTX must have already been exported from the P/C-Chain.
 // Returns the ID of the newly created atomic transaction
 func (service *Service) Import(_ *http.Request, args *ImportArgs, reply *api.JSONTxID) error {
 	service.vm.ctx.Log.Debug("AVM: Import called with username: %s", args.Username)
@@ -1532,7 +1532,7 @@ func (service *Service) Import(_ *http.Request, args *ImportArgs, reply *api.JSO
 		return err
 	}
 
-	ins := []*avax.TransferableInput{}
+	ins := []*djtx.TransferableInput{}
 	keys := [][]*crypto.PrivateKeySECP256K1R{}
 
 	if amountSpent := amountsSpent[service.vm.feeAssetID]; amountSpent < service.vm.TxFee {
@@ -1562,11 +1562,11 @@ func (service *Service) Import(_ *http.Request, args *ImportArgs, reply *api.JSO
 
 	keys = append(keys, importKeys...)
 
-	outs := []*avax.TransferableOutput{}
+	outs := []*djtx.TransferableOutput{}
 	for assetID, amount := range amountsSpent {
 		if amount > 0 {
-			outs = append(outs, &avax.TransferableOutput{
-				Asset: avax.Asset{ID: assetID},
+			outs = append(outs, &djtx.TransferableOutput{
+				Asset: djtx.Asset{ID: assetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: amount,
 					OutputOwners: secp256k1fx.OutputOwners{
@@ -1578,10 +1578,10 @@ func (service *Service) Import(_ *http.Request, args *ImportArgs, reply *api.JSO
 			})
 		}
 	}
-	avax.SortTransferableOutputs(outs, service.vm.codec)
+	djtx.SortTransferableOutputs(outs, service.vm.codec)
 
 	tx := Tx{UnsignedTx: &ImportTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    service.vm.ctx.NetworkID,
 			BlockchainID: service.vm.ctx.ChainID,
 			Outs:         outs,
@@ -1607,10 +1607,10 @@ func (service *Service) Import(_ *http.Request, args *ImportArgs, reply *api.JSO
 type ExportArgs struct {
 	// User, password, from addrs, change addr
 	api.JSONSpendHeader
-	// Amount of nAVAX to send
+	// Amount of nDJTX to send
 	Amount json.Uint64 `json:"amount"`
 
-	// ID of the address that will receive the AVAX. This address includes the
+	// ID of the address that will receive the DJTX. This address includes the
 	// chainID, which is used to determine what the destination chain is.
 	To string `json:"to"`
 
@@ -1618,7 +1618,7 @@ type ExportArgs struct {
 }
 
 // Export sends an asset from this chain to the P/C-Chain.
-// After this tx is accepted, the AVAX must be imported to the P/C-chain with an importTx.
+// After this tx is accepted, the DJTX must be imported to the P/C-chain with an importTx.
 // Returns the ID of the newly created atomic transaction
 func (service *Service) Export(_ *http.Request, args *ExportArgs, reply *api.JSONTxIDChangeAddr) error {
 	service.vm.ctx.Log.Debug("AVM: Export called with username: %s", args.Username)
@@ -1680,8 +1680,8 @@ func (service *Service) Export(_ *http.Request, args *ExportArgs, reply *api.JSO
 		return err
 	}
 
-	exportOuts := []*avax.TransferableOutput{{
-		Asset: avax.Asset{ID: assetID},
+	exportOuts := []*djtx.TransferableOutput{{
+		Asset: djtx.Asset{ID: assetID},
 		Out: &secp256k1fx.TransferOutput{
 			Amt: uint64(args.Amount),
 			OutputOwners: secp256k1fx.OutputOwners{
@@ -1692,12 +1692,12 @@ func (service *Service) Export(_ *http.Request, args *ExportArgs, reply *api.JSO
 		},
 	}}
 
-	outs := []*avax.TransferableOutput{}
+	outs := []*djtx.TransferableOutput{}
 	for assetID, amountSpent := range amountsSpent {
 		amountToSend := amounts[assetID]
 		if amountSpent > amountToSend {
-			outs = append(outs, &avax.TransferableOutput{
-				Asset: avax.Asset{ID: assetID},
+			outs = append(outs, &djtx.TransferableOutput{
+				Asset: djtx.Asset{ID: assetID},
 				Out: &secp256k1fx.TransferOutput{
 					Amt: amountSpent - amountToSend,
 					OutputOwners: secp256k1fx.OutputOwners{
@@ -1709,10 +1709,10 @@ func (service *Service) Export(_ *http.Request, args *ExportArgs, reply *api.JSO
 			})
 		}
 	}
-	avax.SortTransferableOutputs(outs, service.vm.codec)
+	djtx.SortTransferableOutputs(outs, service.vm.codec)
 
 	tx := Tx{UnsignedTx: &ExportTx{
-		BaseTx: BaseTx{BaseTx: avax.BaseTx{
+		BaseTx: BaseTx{BaseTx: djtx.BaseTx{
 			NetworkID:    service.vm.ctx.NetworkID,
 			BlockchainID: service.vm.ctx.ChainID,
 			Outs:         outs,

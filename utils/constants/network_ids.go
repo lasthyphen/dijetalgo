@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2022, Ava Labs, Inc. All rights reserved.
+// (c) 2019-2020, Ava Labs, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
 package constants
@@ -13,18 +13,30 @@ import (
 
 // Const variables to be exported
 const (
-	MainnetID  uint32 = 1
-	TahoeID    uint32 = 5
+	MainnetID uint32 = 1
+	CascadeID uint32 = 2
+	DenaliID  uint32 = 3
+	EverestID uint32 = 4
+	FujiID    uint32 = 5
+
+	TestnetID  uint32 = FujiID
 	UnitTestID uint32 = 10
 	LocalID    uint32 = 12345
 
 	MainnetName  = "mainnet"
-	TahoeName    = "tahoe"
+	CascadeName  = "cascade"
+	DenaliName   = "denali"
+	EverestName  = "everest"
+	FujiName     = "fuji"
+	TestnetName  = "testnet"
 	UnitTestName = "testing"
 	LocalName    = "local"
 
-	MainnetHRP  = "metal"
-	TahoeHRP    = "tahoe"
+	MainnetHRP  = "dijets"
+	CascadeHRP  = "cascade"
+	DenaliHRP   = "denali"
+	EverestHRP  = "everest"
+	FujiHRP     = "fuji"
 	UnitTestHRP = "testing"
 	LocalHRP    = "local"
 	FallbackHRP = "custom"
@@ -37,26 +49,39 @@ var (
 
 	NetworkIDToNetworkName = map[uint32]string{
 		MainnetID:  MainnetName,
-		TahoeID:    TahoeName,
+		CascadeID:  CascadeName,
+		DenaliID:   DenaliName,
+		EverestID:  EverestName,
+		FujiID:     FujiName,
 		UnitTestID: UnitTestName,
 		LocalID:    LocalName,
 	}
 	NetworkNameToNetworkID = map[string]uint32{
 		MainnetName:  MainnetID,
-		TahoeName:    TahoeID,
+		CascadeName:  CascadeID,
+		DenaliName:   DenaliID,
+		EverestName:  EverestID,
+		FujiName:     FujiID,
+		TestnetName:  TestnetID,
 		UnitTestName: UnitTestID,
 		LocalName:    LocalID,
 	}
 
 	NetworkIDToHRP = map[uint32]string{
 		MainnetID:  MainnetHRP,
-		TahoeID:    TahoeHRP,
+		CascadeID:  CascadeHRP,
+		DenaliID:   DenaliHRP,
+		EverestID:  EverestHRP,
+		FujiID:     FujiHRP,
 		UnitTestID: UnitTestHRP,
 		LocalID:    LocalHRP,
 	}
 	NetworkHRPToNetworkID = map[string]uint32{
 		MainnetHRP:  MainnetID,
-		TahoeHRP:    TahoeID,
+		CascadeHRP:  CascadeID,
+		DenaliHRP:   DenaliID,
+		EverestHRP:  EverestID,
+		FujiHRP:     FujiID,
 		UnitTestHRP: UnitTestID,
 		LocalHRP:    LocalID,
 	}

@@ -31,7 +31,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/utils/units"
 	"github.com/lasthyphen/dijetalgo/utils/wrappers"
 	"github.com/lasthyphen/dijetalgo/version"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/platformvm/uptime"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 
@@ -60,8 +60,8 @@ const (
 	// that is allowed to be placed on a validator.
 	MaxValidatorWeightFactor uint64 = 5
 
-	// SupplyCap is the maximum amount of AVAX that should ever exist
-	SupplyCap = 720 * units.MegaAvax
+	// SupplyCap is the maximum amount of DJTX that should ever exist
+	SupplyCap = 720 * units.MegaDjtx
 
 	// Maximum future start time for staking/delegating
 	maxFutureStartTime = 24 * 7 * 2 * time.Hour
@@ -84,8 +84,8 @@ var (
 type VM struct {
 	Factory
 	metrics
-	avax.AddressManager
-	avax.AtomicUTXOManager
+	djtx.AddressManager
+	djtx.AtomicUTXOManager
 	uptime.Manager
 	*network
 
@@ -158,10 +158,10 @@ func (vm *VM) Initialize(
 	}
 
 	// Initialize the utility to parse addresses
-	vm.AddressManager = avax.NewAddressManager(ctx)
+	vm.AddressManager = djtx.NewAddressManager(ctx)
 
 	// Initialize the utility to fetch atomic UTXOs
-	vm.AtomicUTXOManager = avax.NewAtomicUTXOManager(ctx.SharedMemory, Codec)
+	vm.AtomicUTXOManager = djtx.NewAtomicUTXOManager(ctx.SharedMemory, Codec)
 
 	vm.fx = &secp256k1fx.Fx{}
 

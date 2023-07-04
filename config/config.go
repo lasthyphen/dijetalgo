@@ -548,7 +548,7 @@ func getStakingConfig(v *viper.Viper, networkID uint32) (node.StakingConfig, err
 	if err != nil {
 		return node.StakingConfig{}, err
 	}
-	if networkID != constants.MainnetID && networkID != constants.TahoeID {
+	if networkID != constants.MainnetID && networkID != constants.FujiID {
 		config.UptimeRequirement = v.GetFloat64(UptimeRequirementKey)
 		config.MinValidatorStake = v.GetUint64(MinValidatorStakeKey)
 		config.MaxValidatorStake = v.GetUint64(MaxValidatorStakeKey)
@@ -578,7 +578,7 @@ func getStakingConfig(v *viper.Viper, networkID uint32) (node.StakingConfig, err
 }
 
 func getTxFeeConfig(v *viper.Viper, networkID uint32) genesis.TxFeeConfig {
-	if networkID != constants.MainnetID && networkID != constants.TahoeID {
+	if networkID != constants.MainnetID && networkID != constants.FujiID {
 		return genesis.TxFeeConfig{
 			TxFee:                 v.GetUint64(TxFeeKey),
 			CreateAssetTxFee:      v.GetUint64(CreateAssetTxFeeKey),
@@ -590,7 +590,7 @@ func getTxFeeConfig(v *viper.Viper, networkID uint32) genesis.TxFeeConfig {
 }
 
 func getEpochConfig(v *viper.Viper, networkID uint32) (genesis.EpochConfig, error) {
-	if networkID != constants.MainnetID && networkID != constants.TahoeID {
+	if networkID != constants.MainnetID && networkID != constants.FujiID {
 		config := genesis.EpochConfig{
 			EpochFirstTransition: time.Unix(v.GetInt64(SnowEpochFirstTransitionKey), 0),
 			EpochDuration:        v.GetDuration(SnowEpochDurationKey),
@@ -922,7 +922,7 @@ func GetNodeConfig(v *viper.Viper, buildDir string) (node.Config, error) {
 	}
 
 	// Genesis Data
-	nodeConfig.GenesisBytes, nodeConfig.AvaxAssetID, err = genesis.Genesis(
+	nodeConfig.GenesisBytes, nodeConfig.DjtxAssetID, err = genesis.Genesis(
 		nodeConfig.NetworkID,
 		os.ExpandEnv(v.GetString(GenesisConfigFileKey)),
 	)

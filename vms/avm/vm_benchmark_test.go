@@ -10,7 +10,7 @@ import (
 
 	"github.com/lasthyphen/dijetalgo/ids"
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
 
@@ -94,12 +94,12 @@ func GetAllUTXOsBenchmark(b *testing.B, utxoCount int) {
 
 	// #nosec G404
 	for i := 0; i < utxoCount; i++ {
-		utxo := &avax.UTXO{
-			UTXOID: avax.UTXOID{
+		utxo := &djtx.UTXO{
+			UTXOID: djtx.UTXOID{
 				TxID:        ids.GenerateTestID(),
 				OutputIndex: rand.Uint32(),
 			},
-			Asset: avax.Asset{ID: ids.ID{'y', 'e', 'e', 't'}},
+			Asset: djtx.Asset{ID: ids.ID{'y', 'e', 'e', 't'}},
 			Out: &secp256k1fx.TransferOutput{
 				Amt: 100000,
 				OutputOwners: secp256k1fx.OutputOwners{
@@ -120,7 +120,7 @@ func GetAllUTXOsBenchmark(b *testing.B, utxoCount int) {
 
 	var (
 		err               error
-		notPaginatedUTXOs []*avax.UTXO
+		notPaginatedUTXOs []*djtx.UTXO
 	)
 
 	b.ResetTimer()

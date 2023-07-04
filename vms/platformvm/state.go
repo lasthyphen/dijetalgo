@@ -8,7 +8,7 @@ import (
 	"fmt"
 
 	"github.com/lasthyphen/dijetalgo/ids"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 
 	safemath "github.com/lasthyphen/dijetalgo/utils/math"
 )
@@ -29,7 +29,7 @@ func (vm *VM) getPaginatedUTXOs(
 	startAddr ids.ShortID,
 	startUTXOID ids.ID,
 	limit int,
-) ([]*avax.UTXO, ids.ShortID, ids.ID, error) {
+) ([]*djtx.UTXO, ids.ShortID, ids.ID, error) {
 	if limit <= 0 || limit > maxUTXOsToFetch {
 		limit = maxUTXOsToFetch
 	}
@@ -37,7 +37,7 @@ func (vm *VM) getPaginatedUTXOs(
 	lastAddr := ids.ShortEmpty
 	lastIndex := ids.Empty
 
-	utxos := make([]*avax.UTXO, 0, limit)
+	utxos := make([]*djtx.UTXO, 0, limit)
 	seen := make(ids.Set, limit) // IDs of UTXOs already in the list
 	searchSize := limit          // the limit diminishes which can impact the expected return
 
@@ -82,10 +82,10 @@ func (vm *VM) getPaginatedUTXOs(
 
 func (vm *VM) getAllUTXOs(
 	addrs ids.ShortSet,
-) ([]*avax.UTXO, error) {
+) ([]*djtx.UTXO, error) {
 	var err error
 	seen := make(ids.Set, maxUTXOsToFetch) // IDs of UTXOs already in the list
-	utxos := make([]*avax.UTXO, 0, maxUTXOsToFetch)
+	utxos := make([]*djtx.UTXO, 0, maxUTXOsToFetch)
 
 	// enforces the same ordering for pagination
 	addrsList := addrs.SortedList()
@@ -100,7 +100,7 @@ func (vm *VM) getAllUTXOs(
 	return utxos, nil
 }
 
-func (vm *VM) getAllUniqueAddressUTXOs(addr ids.ShortID, seen *ids.Set, utxos *[]*avax.UTXO) (ids.ID, error) {
+func (vm *VM) getAllUniqueAddressUTXOs(addr ids.ShortID, seen *ids.Set, utxos *[]*djtx.UTXO) (ids.ID, error) {
 	lastIndex := ids.Empty
 
 	for {
@@ -138,7 +138,7 @@ func (vm *VM) getBalance(addrs ids.ShortSet) (uint64, error) {
 	}
 	balance := uint64(0)
 	for _, utxo := range utxos {
-		if out, ok := utxo.Out.(avax.Amounter); ok {
+		if out, ok := utxo.Out.(djtx.Amounter); ok {
 			if balance, err = safemath.Add64(out.Amount(), balance); err != nil {
 				return 0, err
 			}

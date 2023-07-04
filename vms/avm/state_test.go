@@ -12,7 +12,7 @@ import (
 	"github.com/lasthyphen/dijetalgo/snow/engine/common"
 	"github.com/lasthyphen/dijetalgo/utils/crypto"
 	"github.com/lasthyphen/dijetalgo/utils/units"
-	"github.com/lasthyphen/dijetalgo/vms/components/avax"
+	"github.com/lasthyphen/dijetalgo/vms/components/djtx"
 	"github.com/lasthyphen/dijetalgo/vms/secp256k1fx"
 )
 
@@ -24,7 +24,7 @@ func TestSetsAndGets(t *testing.T) {
 			Fx: &FxTest{
 				InitializeF: func(vmIntf interface{}) error {
 					vm := vmIntf.(secp256k1fx.VM)
-					return vm.CodecRegistry().RegisterType(&avax.TestVerifiable{})
+					return vm.CodecRegistry().RegisterType(&djtx.TestVerifiable{})
 				},
 			},
 		}},
@@ -40,26 +40,26 @@ func TestSetsAndGets(t *testing.T) {
 
 	state := vm.state
 
-	utxo := &avax.UTXO{
-		UTXOID: avax.UTXOID{
+	utxo := &djtx.UTXO{
+		UTXOID: djtx.UTXOID{
 			TxID:        ids.Empty,
 			OutputIndex: 1,
 		},
-		Asset: avax.Asset{ID: ids.Empty},
-		Out:   &avax.TestVerifiable{},
+		Asset: djtx.Asset{ID: ids.Empty},
+		Out:   &djtx.TestVerifiable{},
 	}
 
-	tx := &Tx{UnsignedTx: &BaseTx{BaseTx: avax.BaseTx{
+	tx := &Tx{UnsignedTx: &BaseTx{BaseTx: djtx.BaseTx{
 		NetworkID:    networkID,
 		BlockchainID: chainID,
-		Ins: []*avax.TransferableInput{{
-			UTXOID: avax.UTXOID{
+		Ins: []*djtx.TransferableInput{{
+			UTXOID: djtx.UTXOID{
 				TxID:        ids.Empty,
 				OutputIndex: 0,
 			},
-			Asset: avax.Asset{ID: assetID},
+			Asset: djtx.Asset{ID: assetID},
 			In: &secp256k1fx.TransferInput{
-				Amt: 20 * units.KiloAvax,
+				Amt: 20 * units.KiloDjtx,
 				Input: secp256k1fx.Input{
 					SigIndices: []uint32{
 						0,
@@ -114,7 +114,7 @@ func TestFundingNoAddresses(t *testing.T) {
 			Fx: &FxTest{
 				InitializeF: func(vmIntf interface{}) error {
 					vm := vmIntf.(secp256k1fx.VM)
-					return vm.CodecRegistry().RegisterType(&avax.TestVerifiable{})
+					return vm.CodecRegistry().RegisterType(&djtx.TestVerifiable{})
 				},
 			},
 		}},
@@ -130,13 +130,13 @@ func TestFundingNoAddresses(t *testing.T) {
 
 	state := vm.state
 
-	utxo := &avax.UTXO{
-		UTXOID: avax.UTXOID{
+	utxo := &djtx.UTXO{
+		UTXOID: djtx.UTXOID{
 			TxID:        ids.Empty,
 			OutputIndex: 1,
 		},
-		Asset: avax.Asset{ID: ids.Empty},
-		Out:   &avax.TestVerifiable{},
+		Asset: djtx.Asset{ID: ids.Empty},
+		Out:   &djtx.TestVerifiable{},
 	}
 
 	if err := state.PutUTXO(utxo.InputID(), utxo); err != nil {
@@ -155,7 +155,7 @@ func TestFundingAddresses(t *testing.T) {
 			Fx: &FxTest{
 				InitializeF: func(vmIntf interface{}) error {
 					vm := vmIntf.(secp256k1fx.VM)
-					return vm.CodecRegistry().RegisterType(&avax.TestAddressable{})
+					return vm.CodecRegistry().RegisterType(&djtx.TestAddressable{})
 				},
 			},
 		}},
@@ -171,13 +171,13 @@ func TestFundingAddresses(t *testing.T) {
 
 	state := vm.state
 
-	utxo := &avax.UTXO{
-		UTXOID: avax.UTXOID{
+	utxo := &djtx.UTXO{
+		UTXOID: djtx.UTXOID{
 			TxID:        ids.Empty,
 			OutputIndex: 1,
 		},
-		Asset: avax.Asset{ID: ids.Empty},
-		Out: &avax.TestAddressable{
+		Asset: djtx.Asset{ID: ids.Empty},
+		Out: &djtx.TestAddressable{
 			Addrs: [][]byte{{0}},
 		},
 	}
