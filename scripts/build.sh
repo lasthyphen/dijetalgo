@@ -12,7 +12,7 @@ source "$AVALANCHE_PATH"/scripts/versions.sh
 source "$AVALANCHE_PATH"/scripts/constants.sh
 
 # Download dependencies
-echo "Downloading dependencies..."
+echo "Downloading Dijets Node dependencies..."
 go mod download
 
 # Build avalanchego

@@ -30,7 +30,7 @@ version_lt() {
 }
 
 if version_lt "$(go_version)" "$go_version_minimum"; then
-    echo "AvalancheGo requires Go >= $go_version_minimum, Go $(go_version) found." >&2
+    echo "Dijets Node requires Go >= $go_version_minimum, Go $(go_version) found." >&2
     exit 1
 fi
 
@@ -43,9 +43,9 @@ source "$AVALANCHE_PATH"/scripts/constants.sh
 
 # Build with rocksdb allowed only if the environment variable ROCKSDBALLOWED is set
 if [ -z ${ROCKSDBALLOWED+x} ]; then
-    echo "Building AvalancheGo..."
+    echo "Building Dijets Node Binaries..."
     go build -ldflags "-X github.com/lasthyphen/dijetalgo/version.GitCommit=$git_commit $static_ld_flags" -o "$avalanchego_path" "$AVALANCHE_PATH/main/"*.go
 else
-    echo "Building AvalancheGo with rocksdb enabled..."
+    echo "Building Dijets Node with rocksdb enabled..."
     go build -tags rocksdballowed -ldflags "-X github.com/lasthyphen/dijetalgo/version.GitCommit=$git_commit $static_ld_flags" -o "$avalanchego_path" "$AVALANCHE_PATH/main/"*.go
 fi

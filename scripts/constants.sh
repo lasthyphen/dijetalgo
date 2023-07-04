@@ -13,7 +13,7 @@ coreth_path="$GOPATH/pkg/mod/github.com/lasthyphen/duluth@$coreth_version"
 
 # Where AvalancheGo binary goes
 build_dir="$AVALANCHE_PATH/build"
-avalanchego_path="$build_dir/avalanchego"
+avalanchego_path="$build_dir/dijetalgo"
 plugin_dir="$build_dir/plugins"
 evm_path="$plugin_dir/evm"
 

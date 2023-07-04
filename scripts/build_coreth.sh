@@ -27,7 +27,7 @@ else
 fi
 
 # Build Coreth
-echo "Building Coreth @ ${coreth_version} ..."
+echo "Building ECC Addons @ ${coreth_version} ..."
 cd "$coreth_path"
 go build -ldflags "-X github.com/lasthyphen/duluth/plugin/evm.Version=$coreth_version $static_ld_flags" -o "$evm_path" "plugin/"*.go
 cd "$AVALANCHE_PATH"
