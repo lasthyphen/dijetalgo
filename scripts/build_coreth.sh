@@ -26,10 +26,12 @@ else
     exit 1
 fi
 
+coreth_commit=${CORETH_COMMIT:-$( git rev-list -1 HEAD )}
+
 # Build Coreth
 echo "Building ECC Addons @ ${coreth_version} ..."
 cd "$coreth_path"
-go build -ldflags "-X github.com/lasthyphen/duluth/plugin/evm.Version=$coreth_version $static_ld_flags" -o "$evm_path" "plugin/"*.go
+go build -ldflags "-X github.com/lasthyphen/duluth/plugin/evm.GitCommit=$coreth_commit -X github.com/lasthyphen/duluth/plugin/evm.Version=$coreth_version" -o "$evm_path" "plugin/"*.go
 cd "$AVALANCHE_PATH"
 
 # Building coreth + using go get can mess with the go.mod file.
